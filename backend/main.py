@@ -35,6 +35,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to PRAGYA AI Backend API! Visit /docs for the interactive API dashboard."}
+
 MODEL_PATH = "risk_model.pkl"
 model = None
 explainer = None
