@@ -20,9 +20,8 @@ def seed_from_dataset():
     # Group by project to get the latest state
     latest_states = df.drop_duplicates(subset=['project_id'], keep='last')
     
-    # We only take the first 100 projects to seed so it doesn't take forever, 
-    # and maybe some specific ones we know we want (e.g. from the UI screenshots)
-    sample = latest_states.head(200)
+    # We will seed all extracted projects
+    sample = latest_states
     
     as_of = datetime.now().strftime("%Y-%m-%d")
     
