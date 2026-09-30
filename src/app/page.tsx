@@ -50,96 +50,96 @@ export default function LandingPage() {
       </div>
 
       {/* Main Content */}
-      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 pt-16 pb-24 md:pt-20 flex flex-col lg:flex-row items-center justify-between relative gap-8 lg:gap-4 xl:gap-10">
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 pt-16 pb-24 md:pt-20 flex flex-col lg:flex-row items-center justify-between relative gap-8 lg:gap-6 xl:gap-2">
         
         {/* Left Column (Text & Stats) */}
-        <div className="lg:w-[50%] xl:w-[45%] z-20 shrink-0">
-          <h1 className="text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.05] mb-6">
+        <div className="lg:w-[50%] xl:w-[40%] z-20 shrink-0">
+          <h1 className="text-6xl lg:text-5xl xl:text-7xl font-extrabold tracking-tight leading-[1.05] mb-6">
             <span className="block text-slate-900">Smarter</span>
             <span className="block text-slate-900 mb-2">Monitoring.</span>
             <span className="block text-emerald-500">Stronger</span>
             <span className="block text-emerald-500">Infrastructure.</span>
           </h1>
           
-          <p className="text-slate-600 text-lg leading-relaxed mb-10 max-w-lg font-medium">
+          <p className="text-slate-600 text-base xl:text-lg leading-relaxed mb-10 max-w-lg font-medium">
             Smart Government Project Monitoring and Risk Management System leverages continuous project data to predict cost overruns, explain risk factors, detect anomalies and generate early warnings — empowering faster, data-driven decisions.
           </p>
           
-          <div className="flex space-x-4">
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex-1 hover:-translate-y-1 transition-transform">
-              <div className="bg-emerald-50 w-10 h-10 rounded-xl flex items-center justify-center mb-4">
-                <BarChart3 className="text-emerald-500 w-5 h-5" />
+          <div className="flex space-x-3 xl:space-x-4">
+            <div className="bg-white p-4 xl:p-5 rounded-2xl shadow-sm border border-slate-100 flex-1 hover:-translate-y-1 transition-transform">
+              <div className="bg-emerald-50 w-8 h-8 xl:w-10 xl:h-10 rounded-xl flex items-center justify-center mb-3 xl:mb-4">
+                <BarChart3 className="text-emerald-500 w-4 h-4 xl:w-5 xl:h-5" />
               </div>
-              <div className="text-2xl font-extrabold text-slate-900">1,981+</div>
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Active Projects</div>
+              <div className="text-xl xl:text-2xl font-extrabold text-slate-900">1,981+</div>
+              <div className="text-[9px] xl:text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Active Projects</div>
             </div>
             
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex-1 hover:-translate-y-1 transition-transform">
-              <div className="bg-blue-50 w-10 h-10 rounded-xl flex items-center justify-center mb-4">
-                <Building2 className="text-blue-500 w-5 h-5" />
+            <div className="bg-white p-4 xl:p-5 rounded-2xl shadow-sm border border-slate-100 flex-1 hover:-translate-y-1 transition-transform">
+              <div className="bg-blue-50 w-8 h-8 xl:w-10 xl:h-10 rounded-xl flex items-center justify-center mb-3 xl:mb-4">
+                <Building2 className="text-blue-500 w-4 h-4 xl:w-5 xl:h-5" />
               </div>
-              <div className="text-2xl font-extrabold text-slate-900">17</div>
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Ministries</div>
+              <div className="text-xl xl:text-2xl font-extrabold text-slate-900">17</div>
+              <div className="text-[9px] xl:text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Ministries</div>
             </div>
             
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex-1 hover:-translate-y-1 transition-transform">
-              <div className="bg-purple-50 w-10 h-10 rounded-xl flex items-center justify-center mb-4">
-                <ShieldCheck className="text-purple-500 w-5 h-5" />
+            <div className="bg-white p-4 xl:p-5 rounded-2xl shadow-sm border border-slate-100 flex-1 hover:-translate-y-1 transition-transform">
+              <div className="bg-purple-50 w-8 h-8 xl:w-10 xl:h-10 rounded-xl flex items-center justify-center mb-3 xl:mb-4">
+                <ShieldCheck className="text-purple-500 w-4 h-4 xl:w-5 xl:h-5" />
               </div>
-              <div className="text-2xl font-extrabold text-slate-900">98%</div>
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">AI Accuracy</div>
+              <div className="text-xl xl:text-2xl font-extrabold text-slate-900">98%</div>
+              <div className="text-[9px] xl:text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">AI Accuracy</div>
             </div>
           </div>
         </div>
 
         {/* Center Decorative Floating Cards (Hidden on small screens) */}
-        <div className="hidden xl:flex relative z-10 w-[280px] h-[500px] pointer-events-none shrink-0 items-center justify-center">
+        <div className="hidden xl:flex relative z-10 w-[240px] h-[500px] pointer-events-none shrink-0 items-center justify-center scale-90 2xl:scale-100 origin-center">
           {/* AI Risk Prediction Card */}
-          <div className="absolute top-4 -left-8 bg-white p-5 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 w-44 animate-[float_6s_ease-in-out_infinite]">
+          <div className="absolute top-4 -left-4 bg-white p-4 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 w-44 animate-[float_6s_ease-in-out_infinite]">
             <div className="text-xs font-bold text-slate-700 mb-4 text-center">AI Risk Prediction</div>
-            <div className="relative w-24 h-24 mx-auto mb-3">
+            <div className="relative w-20 h-20 mx-auto mb-3">
               <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                 <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#f1f5f9" strokeWidth="4" />
                 <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#ef4444" strokeWidth="4" strokeDasharray="82, 100" />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-2xl font-extrabold text-slate-800">82</span>
+                <span className="text-xl font-extrabold text-slate-800">82</span>
               </div>
             </div>
             <div className="text-[10px] font-extrabold text-red-500 text-center uppercase tracking-widest bg-red-50 py-1 rounded-md">High Risk</div>
           </div>
 
           {/* SHAP Factors Card */}
-          <div className="absolute top-36 -right-12 bg-white p-5 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 w-52 animate-[float_7s_ease-in-out_infinite_reverse]">
+          <div className="absolute top-36 -right-6 bg-white p-4 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 w-48 animate-[float_7s_ease-in-out_infinite_reverse]">
             <div className="flex justify-between items-center mb-3">
               <div className="text-xs font-bold text-slate-700">SHAP Factors</div>
               <Activity className="w-3 h-3 text-emerald-500" />
             </div>
             <div className="space-y-3">
               <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-                <span className="text-[11px] font-medium text-slate-500">Milestone Delay</span>
-                <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">+0.28</span>
+                <span className="text-[10px] font-medium text-slate-500">Milestone Delay</span>
+                <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">+0.28</span>
               </div>
               <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-                <span className="text-[11px] font-medium text-slate-500">Progress Gap</span>
-                <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">+0.22</span>
+                <span className="text-[10px] font-medium text-slate-500">Progress Gap</span>
+                <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">+0.22</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-[11px] font-medium text-slate-500">Cost Growth</span>
-                <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">+0.16</span>
+                <span className="text-[10px] font-medium text-slate-500">Cost Growth</span>
+                <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">+0.16</span>
               </div>
             </div>
           </div>
 
           {/* Anomaly Detected Card */}
-          <div className="absolute bottom-4 left-0 bg-white p-5 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 w-56 animate-[float_8s_ease-in-out_infinite]">
+          <div className="absolute bottom-10 -left-2 bg-white p-4 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 w-52 animate-[float_8s_ease-in-out_infinite]">
             <div className="flex items-center space-x-2 mb-2">
               <div className="bg-red-50 p-1.5 rounded-lg">
                 <AlertTriangle className="w-4 h-4 text-red-500" />
               </div>
-              <div className="text-xs font-bold text-slate-800">Anomaly Detected</div>
+              <div className="text-[11px] font-bold text-slate-800">Anomaly Detected</div>
             </div>
-            <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
+            <p className="text-[9px] text-slate-500 leading-relaxed font-medium">
               Unusual cost increase in last 2 updates detected by AI models.
             </p>
           </div>
