@@ -344,7 +344,50 @@ def predict_risk_internal(data: dict):
     }])
 
     try:
-        res = run_inference(data.get("projectId", "PRJ-MOCK"), as_of, df)
+        from backend.pragya_xai.explain.shap_explainer import explain_risk
+        
+        # Calculate for both targets to form a composite view
+        res_overrun = explain_risk(data.get("projectId", "PRJ-MOCK"), as_of, df, target="label_overrun")
+        res_delay = explain_risk(data.get("projectId", "PRJ-MOCK"), as_of, df, target="label_delay")
+        
+        if "error" in res_overrun:
+            raise Exception(res_overrun["error"])
+        if "error" in res_delay:
+            raise Exception(res_delay["error"])
+            
+        # Composite score is the maximum of the two probabilities
+        prob_overrun = res_overrun["risk_probability"]
+        prob_delay = res_delay["risk_probability"]
+        composite_prob = max(prob_overrun, prob_delay)
+        
+        risk_score = composite_prob * 100
+        
+        # Determine overall band
+        if risk_score > 75:
+            risk_band = "High"
+        elif risk_score > 40:
+            risk_band = "Medium"
+        else:
+            risk_band = "Low"
+            
+        # Combine SHAP explanations from both targets if they exist
+        combined_shap = []
+        # Add a prefix to reasons to make them clear
+        if "top_reasons" in res_overrun:
+            combined_shap.extend([{"feature": "Overrun Risk", "impact": "negative", "reason": r} for r in res_overrun["top_reasons"]])
+        if "top_reasons" in res_delay:
+            combined_shap.extend([{"feature": "Delay Risk", "impact": "negative", "reason": r} for r in res_delay["top_reasons"]])
+
+        return {
+            "risk_score":        round(risk_score, 2),
+            "risk_level":        risk_band,
+            "is_anomalous":      False, # Anomaly detection handles this
+            "alert_triggered":   risk_score > 75,
+            "shap_explanations": combined_shap,
+            "p_cost":            round(prob_overrun, 3),
+            "p_time":            round(prob_delay, 3),
+            "p_impl":            0.0
+        }
     except Exception as e:
         print(f"[predict_risk_internal] Inference exception: {e}")
         traceback.print_exc()
@@ -357,36 +400,6 @@ def predict_risk_internal(data: dict):
             "error_detail": str(e)
         }
 
-    if "error" in res:
-        print(f"[predict_risk_internal] Inference returned error: {res['error']}")
-        return {
-            "risk_score": 50.0,
-            "risk_level": "Medium",
-            "is_anomalous": False,
-            "alert_triggered": False,
-            "shap_explanations": [],
-            "error_detail": res["error"]
-        }
-
-    risk_score = res['composite_risk_score'] * 100
-
-    # Filter out any error-dict entries from SHAP (in case SHAP partially failed)
-    raw_shap = res.get('shap_explanation', [])
-    valid_shap = [
-        s for s in raw_shap
-        if isinstance(s, dict) and 'feature' in s and 'impact' in s
-    ]
-
-    return {
-        "risk_score":        round(risk_score, 2),
-        "risk_level":        res['risk_band'],
-        "is_anomalous":      res['anomaly_score'] > 0,
-        "alert_triggered":   risk_score > 75,
-        "shap_explanations": valid_shap,
-        "p_cost":            res.get('p_cost', 0),
-        "p_time":            res.get('p_time', 0),
-        "p_impl":            res.get('p_impl', 0),
-    }
 
 @app.get("/api/alerts")
 def get_alerts(db: Session = Depends(get_db)):
@@ -460,12 +473,19 @@ def get_project_explanation(project_id: str, db: Session = Depends(get_db)):
         Delay_Months=project.delay_months,
         Cost_Overrun_Pct=project.cost_overrun_pct
     )
-    risk_res = predict_risk_internal(data)
+    
+    data_dict = data.dict() if hasattr(data, 'dict') else data.model_dump()
+    data_dict['projectId'] = project.id
+    data_dict['ministry'] = project.ministry
+    data_dict['sector'] = project.sector
+    data_dict['agency'] = project.implementing_agency
+    
+    risk_res = predict_risk_internal(data_dict)
     
     return {
         "project_id": project.id,
         "risk_score": risk_res['risk_score'],
-        "shap_explanations": risk_res['shap_explanations']
+        "shap_explanations": risk_res.get('shap_explanations', [])
     }
 
 @app.get("/api/projects/{project_id}/benchmark")

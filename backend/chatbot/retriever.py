@@ -439,6 +439,11 @@ def fetch(structured_query: dict, role: str = "officer", scope: dict = None) -> 
         results = [p for p in results if structured_query["agency"].lower() in p["implementing_agency"].lower()]
         query_parts.append(f"agency={structured_query['agency']}")
 
+    if structured_query.get("search_keywords"):
+        kw = structured_query["search_keywords"].lower()
+        results = [p for p in results if kw in p["project_name"].lower() or kw in p["sector"].lower() or kw in p.get("ministry", "").lower()]
+        query_parts.append(f"search_keywords={structured_query['search_keywords']}")
+
     if structured_query.get("risk_band"):
         results = [p for p in results if p["risk_level"].lower() == structured_query["risk_band"].lower()]
         query_parts.append(f"risk_level={structured_query['risk_band']}")

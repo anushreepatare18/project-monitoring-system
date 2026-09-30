@@ -30,6 +30,7 @@ class ChatbotRequest(BaseModel):
     officer_id: str = "anonymous"
     role: str = "officer"          # 'officer' | 'ministry' | 'agency' | 'public'
     scope: Optional[dict] = None   # e.g. {"ministry": "Ministry of Power"}
+    history: Optional[List[dict]] = None # e.g. [{"role": "user", "content": "..."}]
 
 
 class ChatbotResponse(BaseModel):
@@ -62,8 +63,8 @@ def ask(req: ChatbotRequest):
             query_log="role=public: access denied",
         )
 
-    # 1. Parse intent
-    structured_query = parse_intent(req.question)
+    # 1. Parse intent, optionally with conversation history
+    structured_query = parse_intent(req.question, req.history)
 
     # 2. Retrieve grounding data
     retrieval_result = fetch(
@@ -96,3 +97,50 @@ def ask(req: ChatbotRequest):
         grounding_method=answer.get("grounding_method", ""),
         query_log=retrieval_result.get("query_log", ""),
     )
+
+import json
+from fastapi.responses import StreamingResponse
+
+@chatbot_router.post("/stream")
+def ask_stream(req: ChatbotRequest):
+    """
+    Streaming endpoint.
+    """
+    if req.role == "public":
+        def error_stream():
+            yield json.dumps({"type": "message", "content": "The AI assistant is not available for public users."}) + "\n"
+        return StreamingResponse(error_stream(), media_type="application/x-ndjson")
+
+    structured_query = parse_intent(req.question, req.history)
+    retrieval_result = fetch(structured_query, role=req.role, scope=req.scope or {})
+    
+    # We will simulate streaming the composed answer for now
+    answer = compose(req.question, structured_query, retrieval_result)
+    
+    try:
+        log_interaction(
+            officer_id=req.officer_id,
+            role=req.role,
+            question=req.question,
+            structured_query=structured_query,
+            retrieval_result=retrieval_result,
+            answer=answer,
+        )
+    except Exception as e:
+        pass
+
+    def chunk_generator():
+        text = answer.get("answer_text", "")
+        # Stream the text in chunks
+        words = text.split(" ")
+        for word in words:
+            yield json.dumps({"type": "chunk", "content": word + " "}) + "\n"
+        
+        # Finally, send metadata
+        yield json.dumps({
+            "type": "metadata",
+            "referenced_projects": answer.get("referenced_projects", []),
+            "query_log": retrieval_result.get("query_log", "")
+        }) + "\n"
+
+    return StreamingResponse(chunk_generator(), media_type="application/x-ndjson")
