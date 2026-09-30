@@ -1,70 +1,132 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Target, ShieldAlert, AlertTriangle, CheckCircle, MessageSquare } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function OfficerDashboard() {
+  const [summary, setSummary] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSummary = async () => {
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/portfolio/summary");
+        if (res.ok) {
+          setSummary(await res.json());
+        }
+      } catch (error) {
+        console.error("Failed to fetch summary:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSummary();
+  }, []);
+
+  const total = summary?.total_projects || 2111;
+  const critical = summary?.risk_distribution?.Critical || 107;
+  const high = summary?.risk_distribution?.High || 0;
+  const onTrack = (summary?.risk_distribution?.Low || 0) + (summary?.risk_distribution?.Medium || 0) || 1977;
+
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+  };
+
   return (
-    <div className="p-8 max-w-6xl mx-auto relative min-h-[calc(100vh-64px)]">
+    <div className="p-8 max-w-6xl mx-auto relative min-h-[calc(100vh-64px)] pb-24">
       
-      <div className="mb-8">
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mb-8"
+      >
         <h1 className="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-emerald-500 to-indigo-600 mb-2">
           Monitoring Officer Dashboard
         </h1>
         <p className="text-sm font-medium text-slate-500">
           Review AI risk anomalies, investigate project delays, and resolve field alerts.
         </p>
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        
+      <motion.div 
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"
+      >
         {/* Card 1 */}
-        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-shadow">
-          <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mb-6">
+        <motion.div variants={item} className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-shadow group">
+          <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
             <Target className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-3xl font-black text-slate-900 tracking-tight">2111</h3>
+            <h3 className="text-3xl font-black text-slate-900 tracking-tight">
+              {loading ? "..." : total}
+            </h3>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Total Monitored</p>
           </div>
-        </div>
+        </motion.div>
 
         {/* Card 2 */}
-        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-shadow">
-          <div className="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-6">
+        <motion.div variants={item} className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-shadow group">
+          <div className="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
             <ShieldAlert className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-3xl font-black text-slate-900 tracking-tight">107</h3>
+            <h3 className="text-3xl font-black text-slate-900 tracking-tight">
+              {loading ? "..." : critical}
+            </h3>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Critical Risk</p>
           </div>
-        </div>
+        </motion.div>
 
         {/* Card 3 */}
-        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-shadow">
-          <div className="w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center mb-6">
+        <motion.div variants={item} className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-shadow group">
+          <div className="w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
             <AlertTriangle className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-3xl font-black text-slate-900 tracking-tight">0</h3>
+            <h3 className="text-3xl font-black text-slate-900 tracking-tight">
+              {loading ? "..." : high}
+            </h3>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">High Risk</p>
           </div>
-        </div>
+        </motion.div>
 
         {/* Card 4 */}
-        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-shadow">
-          <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mb-6">
+        <motion.div variants={item} className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-shadow group">
+          <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
             <CheckCircle className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-3xl font-black text-slate-900 tracking-tight">1977</h3>
+            <h3 className="text-3xl font-black text-slate-900 tracking-tight">
+              {loading ? "..." : onTrack}
+            </h3>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Projects On Track</p>
           </div>
-        </div>
-
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* Alert Queue Overview */}
-      <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex items-center justify-between">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, delay: 0.5 }}
+        className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex items-center justify-between hover:shadow-md transition-shadow"
+      >
         <div className="max-w-2xl pr-8">
           <h3 className="text-sm font-bold text-slate-900 mb-2">Alert Queue Overview</h3>
           <p className="text-[11px] text-slate-500 leading-relaxed">
@@ -81,15 +143,20 @@ export default function OfficerDashboard() {
             <span className="text-[9px] font-bold uppercase tracking-widest mt-1">In Progress</span>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Floating Chat Button */}
-      <div className="fixed bottom-8 right-8 z-50">
-        <button className="w-14 h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-lg shadow-emerald-600/30 flex items-center justify-center transition-transform hover:scale-105 active:scale-95">
-          <MessageSquare className="w-6 h-6" />
+      <motion.div 
+        initial={{ scale: 0, rotate: -90 }}
+        animate={{ scale: 1, rotate: 0 }}
+        transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.8 }}
+        className="fixed bottom-8 right-8 z-50"
+      >
+        <button className="w-14 h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-lg shadow-emerald-600/30 flex items-center justify-center transition-transform hover:scale-110 active:scale-95 group">
+          <MessageSquare className="w-6 h-6 group-hover:animate-pulse" />
           <div className="absolute top-0 right-0 w-3 h-3 bg-white rounded-full border-2 border-emerald-600"></div>
         </button>
-      </div>
+      </motion.div>
 
     </div>
   );
