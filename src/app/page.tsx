@@ -50,10 +50,10 @@ export default function LandingPage() {
       </div>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 pt-16 pb-24 md:pt-24 flex flex-col lg:flex-row items-center justify-between relative">
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 pt-16 pb-24 md:pt-20 flex flex-col lg:flex-row items-center justify-between relative gap-8 lg:gap-4 xl:gap-10">
         
         {/* Left Column (Text & Stats) */}
-        <div className="lg:w-[45%] z-20">
+        <div className="lg:w-[50%] xl:w-[45%] z-20 shrink-0">
           <h1 className="text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.05] mb-6">
             <span className="block text-slate-900">Smarter</span>
             <span className="block text-slate-900 mb-2">Monitoring.</span>
@@ -93,9 +93,9 @@ export default function LandingPage() {
         </div>
 
         {/* Center Decorative Floating Cards (Hidden on small screens) */}
-        <div className="hidden lg:block absolute left-[45%] top-1/2 -translate-y-1/2 z-10 w-[350px] h-[500px] pointer-events-none">
+        <div className="hidden xl:flex relative z-10 w-[280px] h-[500px] pointer-events-none shrink-0 items-center justify-center">
           {/* AI Risk Prediction Card */}
-          <div className="absolute top-10 left-0 bg-white p-5 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 w-44 animate-[float_6s_ease-in-out_infinite]">
+          <div className="absolute top-4 -left-8 bg-white p-5 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 w-44 animate-[float_6s_ease-in-out_infinite]">
             <div className="text-xs font-bold text-slate-700 mb-4 text-center">AI Risk Prediction</div>
             <div className="relative w-24 h-24 mx-auto mb-3">
               <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
@@ -110,7 +110,7 @@ export default function LandingPage() {
           </div>
 
           {/* SHAP Factors Card */}
-          <div className="absolute top-40 right-[-30px] bg-white p-5 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 w-52 animate-[float_7s_ease-in-out_infinite_reverse]">
+          <div className="absolute top-36 -right-12 bg-white p-5 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 w-52 animate-[float_7s_ease-in-out_infinite_reverse]">
             <div className="flex justify-between items-center mb-3">
               <div className="text-xs font-bold text-slate-700">SHAP Factors</div>
               <Activity className="w-3 h-3 text-emerald-500" />
@@ -132,7 +132,7 @@ export default function LandingPage() {
           </div>
 
           {/* Anomaly Detected Card */}
-          <div className="absolute bottom-10 left-10 bg-white p-5 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 w-56 animate-[float_8s_ease-in-out_infinite]">
+          <div className="absolute bottom-4 left-0 bg-white p-5 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 w-56 animate-[float_8s_ease-in-out_infinite]">
             <div className="flex items-center space-x-2 mb-2">
               <div className="bg-red-50 p-1.5 rounded-lg">
                 <AlertTriangle className="w-4 h-4 text-red-500" />
@@ -146,7 +146,7 @@ export default function LandingPage() {
         </div>
 
         {/* Right Column (Login Panel) */}
-        <div className="w-full lg:w-[40%] mt-16 lg:mt-0 z-20">
+        <div className="w-full max-w-md lg:max-w-none lg:w-[45%] xl:w-[35%] mt-16 lg:mt-0 z-20 shrink-0">
           <div className="bg-white rounded-[2rem] p-8 shadow-2xl shadow-slate-200/50 border border-slate-100 relative overflow-hidden">
             <h2 className="text-3xl font-extrabold text-slate-900 mb-1">Secure Access</h2>
             <p className="text-sm font-medium text-slate-500 mb-8">Sign in to the intelligent monitoring portal</p>
