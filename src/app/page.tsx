@@ -1,171 +1,245 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { 
-  AlertTriangle, 
-  CheckCircle, 
-  Clock, 
-  TrendingUp, 
-  BarChart3,
-  FileText,
-  Activity,
-  ArrowRight
+  Building2, 
+  BarChart3, 
+  ShieldCheck, 
+  User, 
+  Lock, 
+  Eye, 
+  Briefcase, 
+  ChevronDown,
+  ArrowRight,
+  AlertTriangle,
+  Activity
 } from "lucide-react";
 
-const API_URL = "https://project-monitoring-system-rykj.onrender.com/api";
+export default function LandingPage() {
+  const router = useRouter();
 
-export default function Dashboard() {
-  const [summary, setSummary] = useState<any>(null);
-  const [projects, setProjects] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    Promise.all([
-      fetch(`${API_URL}/portfolio/summary`),
-      fetch(`${API_URL}/projects`)
-    ])
-      .then(async ([resSummary, resProjects]) => {
-        if (!resSummary.ok || !resProjects.ok) {
-          throw new Error("Failed to fetch data");
-        }
-        setSummary(await resSummary.json());
-        const projData = await resProjects.json();
-        setProjects(projData);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-slate-50/50">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-emerald-700 font-medium animate-pulse">Loading AI Insights...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleDemoLogin = (role: string) => {
+    router.push(`/dashboard/${role.toLowerCase()}`);
+  };
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Decorative Background Elements */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-300/20 rounded-full blur-[120px] pointer-events-none animate-slow-zoom"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-300/20 rounded-full blur-[150px] pointer-events-none animate-slow-zoom" style={{ animationDelay: '1s' }}></div>
-
-      <nav className="glass-panel mx-6 mt-6 px-8 py-4 flex justify-between items-center z-10 relative animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-        <div className="flex items-center space-x-3">
-          <div className="bg-gradient-to-br from-emerald-500 to-indigo-600 p-2 rounded-xl shadow-lg">
-            <Activity className="w-6 h-6 text-white animate-pulse" />
+    <div className="min-h-screen bg-[#f4f7f9] text-slate-800 font-sans selection:bg-emerald-200 selection:text-emerald-900 overflow-x-hidden relative">
+      
+      {/* Navbar */}
+      <div className="pt-6 px-6 flex justify-center w-full z-50">
+        <nav className="bg-white/90 backdrop-blur-md rounded-full px-4 py-3 flex items-center justify-between w-full max-w-7xl shadow-sm border border-slate-200">
+          <div className="flex items-center space-x-3 pl-2">
+            <div className="bg-emerald-100 text-emerald-700 font-bold rounded-full w-8 h-8 flex items-center justify-center text-xs">
+              PR
+            </div>
+            <span className="font-bold text-sm tracking-tight hidden md:block text-slate-800">
+              Smart Government Project Monitoring <span className="text-emerald-600">and Risk Management System</span>
+            </span>
           </div>
-          <h1 className="text-2xl font-bold text-slate-800">
-            PRAGYA <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-indigo-600">AI</span>
-            <span className="text-sm font-medium text-slate-500 ml-3 tracking-wide uppercase">Project Monitoring System</span>
-          </h1>
-        </div>
-        <div className="flex space-x-6">
-          <Link href="/projects" className="text-sm font-semibold text-slate-600 hover:text-emerald-600 transition-colors">Projects</Link>
-          <Link href="/alerts" className="text-sm font-semibold text-slate-600 hover:text-emerald-600 transition-colors">Alerts</Link>
-        </div>
-      </nav>
-
-      <main className="max-w-7xl mx-auto px-6 py-10 relative z-10">
-        <div className="flex justify-between items-end mb-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-          <div>
-            <h2 className="text-3xl font-extrabold text-slate-800 mb-1">Portfolio Overview</h2>
-            <p className="text-slate-500">Real-time AI analysis of nationwide infrastructure projects</p>
+          
+          <div className="flex items-center space-x-6 pr-2">
+            <Link href="#capabilities" className="text-sm font-semibold text-slate-600 hover:text-emerald-600 transition-colors hidden md:block">Capabilities</Link>
+            <Link href="#workflows" className="text-sm font-semibold text-slate-600 hover:text-emerald-600 transition-colors hidden md:block">Workflows</Link>
+            <button className="bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold py-2 px-6 rounded-full transition-transform hover:scale-105 active:scale-95 shadow-md flex items-center">
+              Access Portal
+              <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full ml-2"></div>
+            </button>
           </div>
-        </div>
+        </nav>
+      </div>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-6 pt-16 pb-24 md:pt-24 flex flex-col lg:flex-row items-center justify-between relative">
         
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-          {[
-            { label: 'Total Projects', value: summary?.total_projects || 0, icon: FileText, color: 'text-blue-600', bg: 'bg-blue-100', delay: '0.3s' },
-            { label: 'Total Approved Cost', value: `₹${(summary?.total_cost || 0).toLocaleString()} Cr`, icon: BarChart3, color: 'text-emerald-600', bg: 'bg-emerald-100', delay: '0.4s' },
-            { label: 'Critical Risk Projects', value: summary?.risk_distribution?.Critical || 0, icon: AlertTriangle, color: 'text-rose-600', bg: 'bg-rose-100', delay: '0.5s' },
-            { label: 'High Risk Projects', value: summary?.risk_distribution?.High || 0, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-100', delay: '0.6s' }
-          ].map((stat, idx) => (
-            <div key={idx} className="glass-panel glass-panel-hover p-6 flex flex-col justify-between animate-fade-in-up" style={{ animationDelay: stat.delay }}>
-              <div className="flex justify-between items-start mb-4">
-                <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">{stat.label}</span>
-                <div className={`${stat.bg} p-2 rounded-xl`}>
-                  <stat.icon className={`w-5 h-5 ${stat.color}`} />
+        {/* Left Column (Text & Stats) */}
+        <div className="lg:w-[45%] z-20">
+          <h1 className="text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.05] mb-6">
+            <span className="block text-slate-900">Smarter</span>
+            <span className="block text-slate-900 mb-2">Monitoring.</span>
+            <span className="block text-emerald-500">Stronger</span>
+            <span className="block text-emerald-500">Infrastructure.</span>
+          </h1>
+          
+          <p className="text-slate-600 text-lg leading-relaxed mb-10 max-w-lg font-medium">
+            Smart Government Project Monitoring and Risk Management System leverages continuous project data to predict cost overruns, explain risk factors, detect anomalies and generate early warnings — empowering faster, data-driven decisions.
+          </p>
+          
+          <div className="flex space-x-4">
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex-1 hover:-translate-y-1 transition-transform">
+              <div className="bg-emerald-50 w-10 h-10 rounded-xl flex items-center justify-center mb-4">
+                <BarChart3 className="text-emerald-500 w-5 h-5" />
+              </div>
+              <div className="text-2xl font-extrabold text-slate-900">1,981+</div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Active Projects</div>
+            </div>
+            
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex-1 hover:-translate-y-1 transition-transform">
+              <div className="bg-blue-50 w-10 h-10 rounded-xl flex items-center justify-center mb-4">
+                <Building2 className="text-blue-500 w-5 h-5" />
+              </div>
+              <div className="text-2xl font-extrabold text-slate-900">17</div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Ministries</div>
+            </div>
+            
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex-1 hover:-translate-y-1 transition-transform">
+              <div className="bg-purple-50 w-10 h-10 rounded-xl flex items-center justify-center mb-4">
+                <ShieldCheck className="text-purple-500 w-5 h-5" />
+              </div>
+              <div className="text-2xl font-extrabold text-slate-900">98%</div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">AI Accuracy</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Center Decorative Floating Cards (Hidden on small screens) */}
+        <div className="hidden lg:block absolute left-[45%] top-1/2 -translate-y-1/2 z-10 w-[350px] h-[500px] pointer-events-none">
+          {/* AI Risk Prediction Card */}
+          <div className="absolute top-10 left-0 bg-white p-5 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 w-44 animate-[float_6s_ease-in-out_infinite]">
+            <div className="text-xs font-bold text-slate-700 mb-4 text-center">AI Risk Prediction</div>
+            <div className="relative w-24 h-24 mx-auto mb-3">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#f1f5f9" strokeWidth="4" />
+                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#ef4444" strokeWidth="4" strokeDasharray="82, 100" />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-2xl font-extrabold text-slate-800">82</span>
+              </div>
+            </div>
+            <div className="text-[10px] font-extrabold text-red-500 text-center uppercase tracking-widest bg-red-50 py-1 rounded-md">High Risk</div>
+          </div>
+
+          {/* SHAP Factors Card */}
+          <div className="absolute top-40 right-[-30px] bg-white p-5 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 w-52 animate-[float_7s_ease-in-out_infinite_reverse]">
+            <div className="flex justify-between items-center mb-3">
+              <div className="text-xs font-bold text-slate-700">SHAP Factors</div>
+              <Activity className="w-3 h-3 text-emerald-500" />
+            </div>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center border-b border-slate-50 pb-2">
+                <span className="text-[11px] font-medium text-slate-500">Milestone Delay</span>
+                <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">+0.28</span>
+              </div>
+              <div className="flex justify-between items-center border-b border-slate-50 pb-2">
+                <span className="text-[11px] font-medium text-slate-500">Progress Gap</span>
+                <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">+0.22</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-[11px] font-medium text-slate-500">Cost Growth</span>
+                <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">+0.16</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Anomaly Detected Card */}
+          <div className="absolute bottom-10 left-10 bg-white p-5 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 w-56 animate-[float_8s_ease-in-out_infinite]">
+            <div className="flex items-center space-x-2 mb-2">
+              <div className="bg-red-50 p-1.5 rounded-lg">
+                <AlertTriangle className="w-4 h-4 text-red-500" />
+              </div>
+              <div className="text-xs font-bold text-slate-800">Anomaly Detected</div>
+            </div>
+            <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
+              Unusual cost increase in last 2 updates detected by AI models.
+            </p>
+          </div>
+        </div>
+
+        {/* Right Column (Login Panel) */}
+        <div className="w-full lg:w-[40%] mt-16 lg:mt-0 z-20">
+          <div className="bg-white rounded-[2rem] p-8 shadow-2xl shadow-slate-200/50 border border-slate-100 relative overflow-hidden">
+            <h2 className="text-3xl font-extrabold text-slate-900 mb-1">Secure Access</h2>
+            <p className="text-sm font-medium text-slate-500 mb-8">Sign in to the intelligent monitoring portal</p>
+            
+            <form className="space-y-4 mb-6">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <User className="h-4 w-4 text-slate-400" />
+                </div>
+                <input 
+                  type="email" 
+                  placeholder="Email Address" 
+                  className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border-none rounded-xl text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none"
+                  defaultValue="demo@pragya.gov.in"
+                />
+              </div>
+              
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Lock className="h-4 w-4 text-slate-400" />
+                </div>
+                <input 
+                  type="password" 
+                  placeholder="Password" 
+                  className="w-full pl-11 pr-12 py-3.5 bg-slate-50 border-none rounded-xl text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none"
+                  defaultValue="password123"
+                />
+                <div className="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer">
+                  <Eye className="h-4 w-4 text-slate-400 hover:text-slate-600" />
                 </div>
               </div>
-              <span className="text-4xl font-extrabold text-slate-800 tracking-tight">{stat.value}</span>
-            </div>
-          ))}
-        </div>
 
-        {/* Project List */}
-        <div className="flex justify-between items-end mb-6 animate-fade-in-up" style={{ animationDelay: '0.7s' }}>
-          <h2 className="text-2xl font-bold text-slate-800">Tracked Projects</h2>
-          <Link href="/projects" className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 flex items-center group">
-            View All <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-          </Link>
-        </div>
-        
-        <div className="glass-panel overflow-hidden animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-slate-50/50 backdrop-blur-md border-b border-slate-200/50">
-                <tr>
-                  <th className="px-8 py-5 text-xs font-bold text-slate-500 uppercase tracking-wider">Project Name</th>
-                  <th className="px-8 py-5 text-xs font-bold text-slate-500 uppercase tracking-wider">Agency</th>
-                  <th className="px-8 py-5 text-xs font-bold text-slate-500 uppercase tracking-wider">Progress</th>
-                  <th className="px-8 py-5 text-xs font-bold text-slate-500 uppercase tracking-wider">Cost (Cr)</th>
-                  <th className="px-8 py-5 text-xs font-bold text-slate-500 uppercase tracking-wider">AI Risk Level</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100/50">
-                {projects.slice(0, 10).map((project, idx) => (
-                  <tr key={project.id} className="table-row-hover group">
-                    <td className="px-8 py-5">
-                      <div className="font-bold text-slate-800 group-hover:text-emerald-700 transition-colors">{project.name}</div>
-                      <div className="text-xs font-medium text-slate-400 mt-1">{project.sector}</div>
-                    </td>
-                    <td className="px-8 py-5 text-sm font-medium text-slate-600">{project.implementing_agency}</td>
-                    <td className="px-8 py-5 text-sm font-medium text-slate-600">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-full bg-slate-100 rounded-full h-2.5 max-w-[120px] shadow-inner overflow-hidden">
-                          <div 
-                            className="bg-gradient-to-r from-blue-500 to-indigo-500 h-full rounded-full relative" 
-                            style={{ width: `${Math.min(100, project.physical_progress_pct)}%` }}
-                          >
-                            <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
-                          </div>
-                        </div>
-                        <span className="font-bold text-slate-700">{project.physical_progress_pct}%</span>
-                      </div>
-                    </td>
-                    <td className="px-8 py-5 text-sm font-bold text-slate-700">₹{project.original_cost_cr.toLocaleString()}</td>
-                    <td className="px-8 py-5">
-                      <span className={`px-4 py-1.5 rounded-full text-xs font-bold shadow-sm ${
-                        project.risk_level === 'Critical' ? 'bg-rose-100/80 text-rose-700 border border-rose-200' :
-                        project.risk_level === 'High' ? 'bg-amber-100/80 text-amber-700 border border-amber-200' :
-                        project.risk_level === 'Medium' ? 'bg-yellow-100/80 text-yellow-700 border border-yellow-200' :
-                        'bg-emerald-100/80 text-emerald-700 border border-emerald-200'
-                      }`}>
-                        {project.risk_level}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {projects.length === 0 && (
-            <div className="p-12 text-center text-slate-500 font-medium flex flex-col items-center">
-              <Activity className="w-12 h-12 mb-4 text-slate-300 animate-pulse" />
-              Waiting for AI models to synchronize project data...
+              <div className="pt-2">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Select Active Role</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Briefcase className="h-4 w-4 text-slate-400" />
+                  </div>
+                  <select className="w-full pl-11 pr-10 py-3.5 bg-slate-50 border-none rounded-xl text-sm font-semibold text-slate-800 appearance-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none cursor-pointer">
+                    <option value="" disabled>Choose your role...</option>
+                    <option value="admin">System Administrator</option>
+                    <option value="ministry">Ministry Official</option>
+                    <option value="officer">Field Officer</option>
+                    <option value="public">Public Citizen</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                    <ChevronDown className="h-4 w-4 text-slate-400" />
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                type="button"
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-4 rounded-xl mt-4 transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center shadow-lg shadow-slate-900/20"
+                onClick={() => handleDemoLogin('admin')}
+              >
+                Authenticate to Portal <ArrowRight className="w-4 h-4 ml-2" />
+              </button>
+            </form>
+
+            <div className="relative flex items-center py-4">
+              <div className="flex-grow border-t border-slate-100 border-dashed"></div>
+              <span className="flex-shrink-0 mx-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">1-Click Demo Login</span>
+              <div className="flex-grow border-t border-slate-100 border-dashed"></div>
             </div>
-          )}
+
+            <div className="grid grid-cols-2 gap-3">
+              <button onClick={() => handleDemoLogin('admin')} className="flex items-center justify-center space-x-2 py-3 border border-slate-200 rounded-xl hover:border-emerald-500 hover:bg-emerald-50 transition-colors group">
+                <ShieldCheck className="w-4 h-4 text-slate-500 group-hover:text-emerald-600" />
+                <span className="text-xs font-bold text-slate-700 group-hover:text-emerald-700">Admin</span>
+              </button>
+              <button onClick={() => handleDemoLogin('ministry')} className="flex items-center justify-center space-x-2 py-3 border border-slate-200 rounded-xl hover:border-emerald-500 hover:bg-emerald-50 transition-colors group">
+                <Building2 className="w-4 h-4 text-slate-500 group-hover:text-emerald-600" />
+                <span className="text-xs font-bold text-slate-700 group-hover:text-emerald-700">Ministry</span>
+              </button>
+              <button onClick={() => handleDemoLogin('officer')} className="flex items-center justify-center space-x-2 py-3 border border-slate-200 rounded-xl hover:border-emerald-500 hover:bg-emerald-50 transition-colors group">
+                <Briefcase className="w-4 h-4 text-slate-500 group-hover:text-emerald-600" />
+                <span className="text-xs font-bold text-slate-700 group-hover:text-emerald-700">Officer</span>
+              </button>
+              <button onClick={() => handleDemoLogin('public')} className="flex items-center justify-center space-x-2 py-3 border border-slate-200 rounded-xl hover:border-emerald-500 hover:bg-emerald-50 transition-colors group">
+                <User className="w-4 h-4 text-slate-500 group-hover:text-emerald-600" />
+                <span className="text-xs font-bold text-slate-700 group-hover:text-emerald-700">Public</span>
+              </button>
+            </div>
+          </div>
         </div>
       </main>
+
+      {/* Scroll Down Indicator */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center animate-bounce opacity-70">
+        <span className="text-[10px] font-extrabold text-emerald-600 uppercase tracking-widest mb-1">Scroll to Explore</span>
+        <ChevronDown className="w-4 h-4 text-emerald-600" />
+      </div>
     </div>
   );
 }
