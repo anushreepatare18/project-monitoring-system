@@ -21,7 +21,6 @@ Output schema (all fields optional / None if not mentioned):
   "limit": int,                    # default 10
   "clarifying_question": str | None,   # set if question is ambiguous
   "out_of_scope_reason": str | None,   # set if intent == "cannot_answer"
-  "search_keywords": str | None,       # set if user searches for names/descriptions
 }
 """
 
@@ -102,7 +101,7 @@ def _rules_precheck(question: str) -> Optional[dict]:
     return None
 
 
-def _llm_parse(question: str, history: Optional[list] = None) -> dict:
+def _llm_parse(question: str) -> dict:
     """Ask the LLM to extract structured query fields. Never ask it for facts."""
     system_prompt = """You are a query-structure extractor for the PRAGYA AI government project monitoring system.
 Your ONLY job is to extract query parameters from the officer's question into JSON.
@@ -119,16 +118,11 @@ Rules:
 - If the question is ambiguous (could mean multiple things), set clarifying_question.
 - project_ids must be an array (empty if none mentioned).
 - limit defaults to 10.
-- If the user provides keywords to search for project names or descriptions, put them in search_keywords.
 - All other fields default to null.
 
 Return ONLY a valid JSON object - no markdown, no explanation."""
 
-    history_text = ""
-    if history:
-        history_text = "Conversation History:\n" + "\n".join([f"{msg.get('role', 'user')}: {msg.get('content', '')}" for msg in history]) + "\n\n"
-
-    user_prompt = f"""{history_text}Extract query parameters from this question:
+    user_prompt = f"""Extract query parameters from this question:
 "{question}"
 
 Return JSON with these fields (all optional, use null if not present):
@@ -146,8 +140,7 @@ Return JSON with these fields (all optional, use null if not present):
   "sort_by": "<field or null>",
   "limit": 10,
   "clarifying_question": "<one clarifying question or null>",
-  "out_of_scope_reason": "<reason or null>",
-  "search_keywords": "<search keywords or null>"
+  "out_of_scope_reason": "<reason or null>"
 }}"""
 
     raw = _call_gemini(system_prompt + "\n\n" + user_prompt)
@@ -186,7 +179,6 @@ def _apply_defaults(parsed: dict) -> dict:
         "limit": 10,
         "clarifying_question": None,
         "out_of_scope_reason": None,
-        "search_keywords": None,
     }
     for k, v in defaults.items():
         if k not in parsed or parsed[k] is None:
@@ -212,7 +204,7 @@ def _apply_defaults(parsed: dict) -> dict:
     return parsed
 
 
-def parse_intent(question: str, history: Optional[list] = None) -> dict:
+def parse_intent(question: str) -> dict:
     """
     Main entry point.
     Returns a structured query dict suitable for retriever.fetch().
@@ -223,7 +215,7 @@ def parse_intent(question: str, history: Optional[list] = None) -> dict:
         return _apply_defaults(rules_result)
 
     # 2. LLM extraction
-    parsed = _llm_parse(question, history)
+    parsed = _llm_parse(question)
 
     # 3. Apply defaults and validation
     return _apply_defaults(parsed)

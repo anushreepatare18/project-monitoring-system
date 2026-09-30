@@ -84,11 +84,9 @@ class ProjectSchema(BaseModel):
         orm_mode = True
 
 class AlertReview(BaseModel):
-    status: str # Confirmed, False alarm, Needs info, Escalate
+    status: str # Verified, Dismissed
     officer_notes: Optional[str] = None
-    recommended_action: Optional[str] = None
-    user_role: str = "Monitoring Officer"
-    feedback_tags: Optional[str] = None
+    user_role: str = "Officer"
 
 from backend.ml_core.inference.infer import run_inference
 
@@ -141,28 +139,8 @@ def update_project(project_id: str, data: ProjectUpdate, db: Session = Depends(g
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
+    # Predict risk using ML model
     data_dict = data.dict() if hasattr(data, 'dict') else data.model_dump()
-
-    # FR-VAL: Run validation
-    from backend.validation import validate_project_update
-    from backend.app_db import ValidationResult
-    
-    prev_state = {
-        'original_cost_cr': project.original_cost_cr,
-        'physical_progress_pct': project.physical_progress_pct,
-    }
-    val_result = validate_project_update(data_dict, prev_state)
-    
-    if not val_result["is_valid"]:
-        raise HTTPException(status_code=400, detail={"errors": val_result["hard_errors"]})
-
-    from backend.anomaly import detect_anomalies
-    from backend.app_db import AnomalyResult
-    
-    anomaly_check = detect_anomalies(data_dict, prev_state)
-    is_anomalous = anomaly_check["is_flagged"]
-    
-    # We still get risk_score from model
     data_dict['projectId'] = project.id
     data_dict['ministry'] = project.ministry
     data_dict['sector'] = project.sector
@@ -177,13 +155,17 @@ def update_project(project_id: str, data: ProjectUpdate, db: Session = Depends(g
     project.cost_overrun_pct = data.Cost_Overrun_Pct
     project.risk_score = risk_res['risk_score']
     project.risk_level = risk_res['risk_level']
-    project.is_anomalous = is_anomalous
-
+    project.is_anomalous = risk_res['is_anomalous']
     
-    # Generate Alert if necessary using the new Alert Engine
-    from backend.alert_engine import evaluate_alert_rules
-    new_alert = evaluate_alert_rules(project, risk_res, is_anomalous, db)
-    if new_alert:
+    # Generate Alert if necessary
+    if risk_res['alert_triggered']:
+        alert = Alert(
+            project_id=project.id,
+            risk_score=risk_res['risk_score'],
+            message=f"High risk detected. Anomalous: {risk_res['is_anomalous']}",
+            status="Open"
+        )
+        db.add(alert)
         send_notification(project.id, risk_res['risk_level'])
     
     # Audit log
@@ -211,28 +193,6 @@ def update_project(project_id: str, data: ProjectUpdate, db: Session = Depends(g
         is_anomalous=risk_res['is_anomalous']
     )
     db.add(history)
-    db.flush() # To get history.id
-    
-    # Save Validation Results (Soft Warnings)
-    for warning in val_result["soft_warnings"]:
-        v_res = ValidationResult(
-            update_id=history.id,
-            rule_id="SW-01",
-            severity="Soft warning",
-            field=warning["field"],
-            message=warning["message"]
-        )
-        db.add(v_res)
-        
-    # Save Anomaly Results
-    import json
-    anom_res = AnomalyResult(
-        update_id=history.id,
-        anomaly_score=anomaly_check["anomaly_score"],
-        flagged=anomaly_check["is_flagged"],
-        reasons_json=json.dumps(anomaly_check["reasons"])
-    )
-    db.add(anom_res)
     
     db.commit()
     
@@ -344,50 +304,7 @@ def predict_risk_internal(data: dict):
     }])
 
     try:
-        from backend.pragya_xai.explain.shap_explainer import explain_risk
-        
-        # Calculate for both targets to form a composite view
-        res_overrun = explain_risk(data.get("projectId", "PRJ-MOCK"), as_of, df, target="label_overrun")
-        res_delay = explain_risk(data.get("projectId", "PRJ-MOCK"), as_of, df, target="label_delay")
-        
-        if "error" in res_overrun:
-            raise Exception(res_overrun["error"])
-        if "error" in res_delay:
-            raise Exception(res_delay["error"])
-            
-        # Composite score is the maximum of the two probabilities
-        prob_overrun = res_overrun["risk_probability"]
-        prob_delay = res_delay["risk_probability"]
-        composite_prob = max(prob_overrun, prob_delay)
-        
-        risk_score = composite_prob * 100
-        
-        # Determine overall band
-        if risk_score > 75:
-            risk_band = "High"
-        elif risk_score > 40:
-            risk_band = "Medium"
-        else:
-            risk_band = "Low"
-            
-        # Combine SHAP explanations from both targets if they exist
-        combined_shap = []
-        # Add a prefix to reasons to make them clear
-        if "top_reasons" in res_overrun:
-            combined_shap.extend([{"feature": "Overrun Risk", "impact": "negative", "reason": r} for r in res_overrun["top_reasons"]])
-        if "top_reasons" in res_delay:
-            combined_shap.extend([{"feature": "Delay Risk", "impact": "negative", "reason": r} for r in res_delay["top_reasons"]])
-
-        return {
-            "risk_score":        round(risk_score, 2),
-            "risk_level":        risk_band,
-            "is_anomalous":      False, # Anomaly detection handles this
-            "alert_triggered":   risk_score > 75,
-            "shap_explanations": combined_shap,
-            "p_cost":            round(prob_overrun, 3),
-            "p_time":            round(prob_delay, 3),
-            "p_impl":            0.0
-        }
+        res = run_inference(data.get("projectId", "PRJ-MOCK"), as_of, df)
     except Exception as e:
         print(f"[predict_risk_internal] Inference exception: {e}")
         traceback.print_exc()
@@ -400,6 +317,36 @@ def predict_risk_internal(data: dict):
             "error_detail": str(e)
         }
 
+    if "error" in res:
+        print(f"[predict_risk_internal] Inference returned error: {res['error']}")
+        return {
+            "risk_score": 50.0,
+            "risk_level": "Medium",
+            "is_anomalous": False,
+            "alert_triggered": False,
+            "shap_explanations": [],
+            "error_detail": res["error"]
+        }
+
+    risk_score = res['composite_risk_score'] * 100
+
+    # Filter out any error-dict entries from SHAP (in case SHAP partially failed)
+    raw_shap = res.get('shap_explanation', [])
+    valid_shap = [
+        s for s in raw_shap
+        if isinstance(s, dict) and 'feature' in s and 'impact' in s
+    ]
+
+    return {
+        "risk_score":        round(risk_score, 2),
+        "risk_level":        res['risk_band'],
+        "is_anomalous":      res['anomaly_score'] > 0,
+        "alert_triggered":   risk_score > 75,
+        "shap_explanations": valid_shap,
+        "p_cost":            res.get('p_cost', 0),
+        "p_time":            res.get('p_time', 0),
+        "p_impl":            res.get('p_impl', 0),
+    }
 
 @app.get("/api/alerts")
 def get_alerts(db: Session = Depends(get_db)):
@@ -422,8 +369,6 @@ def get_alerts(db: Session = Depends(get_db)):
 
 @app.post("/api/alerts/{alert_id}/review")
 def review_alert(alert_id: int, review: AlertReview, db: Session = Depends(get_db)):
-    from backend.app_db import Decision
-    
     alert = db.query(Alert).filter(Alert.id == alert_id).first()
     if not alert:
         raise HTTPException(status_code=404, detail="Alert not found")
@@ -431,24 +376,11 @@ def review_alert(alert_id: int, review: AlertReview, db: Session = Depends(get_d
     alert.status = review.status
     alert.officer_notes = review.officer_notes
     
-    decision = Decision(
-        alert_id=alert.id,
-        officer_id="current_user_mock",
-        classification=review.status,
-        remarks=review.officer_notes or "",
-        recommended_action=review.recommended_action,
-        feedback_tags=review.feedback_tags
-    )
-    db.add(decision)
-    
     # Audit log
     audit = AuditLog(
-        action="Alert Decision Logged",
-        actor="current_user_mock",
+        action="Alert Review",
         user_role=review.user_role,
-        object_type="Alert",
-        object_id=str(alert.id),
-        details=f"Reviewed alert {alert.id}. Classification: {review.status}"
+        details=f"Reviewed alert {alert.id}. Status: {review.status}"
     )
     db.add(audit)
     db.commit()
@@ -473,32 +405,40 @@ def get_project_explanation(project_id: str, db: Session = Depends(get_db)):
         Delay_Months=project.delay_months,
         Cost_Overrun_Pct=project.cost_overrun_pct
     )
-    
-    data_dict = data.dict() if hasattr(data, 'dict') else data.model_dump()
-    data_dict['projectId'] = project.id
-    data_dict['ministry'] = project.ministry
-    data_dict['sector'] = project.sector
-    data_dict['agency'] = project.implementing_agency
-    
-    risk_res = predict_risk_internal(data_dict)
+    risk_res = predict_risk_internal(data)
     
     return {
         "project_id": project.id,
         "risk_score": risk_res['risk_score'],
-        "shap_explanations": risk_res.get('shap_explanations', [])
+        "shap_explanations": risk_res['shap_explanations']
     }
 
 @app.get("/api/projects/{project_id}/benchmark")
 def get_project_benchmark(project_id: str, db: Session = Depends(get_db)):
-    from backend.analytics import compute_project_benchmarks
-    from datetime import datetime
-    
-    result = compute_project_benchmarks(project_id, datetime.utcnow(), db)
-    if not result:
-        raise HTTPException(status_code=404, detail="Project or peers not found")
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
         
-    db.commit() # Save the benchmark result log
-    return result
+    peers = db.query(Project).filter(Project.sector == project.sector).all()
+    
+    if not peers:
+        return {"error": "No peers found"}
+        
+    cost_overruns = sorted([p.cost_overrun_pct for p in peers])
+    delays = sorted([p.delay_months for p in peers])
+    
+    # Calculate percentile
+    def get_percentile(val, arr):
+        if not arr: return 0
+        return sum(1 for x in arr if x < val) / len(arr) * 100
+        
+    return {
+        "project_id": project.id,
+        "sector": project.sector,
+        "peer_count": len(peers),
+        "cost_overrun_percentile": get_percentile(project.cost_overrun_pct, cost_overruns),
+        "delay_percentile": get_percentile(project.delay_months, delays)
+    }
 
 @app.get("/api/portfolio/summary")
 def get_portfolio_summary(db: Session = Depends(get_db)):
@@ -573,8 +513,15 @@ def get_public_projects(db: Session = Depends(get_db)):
 @app.get("/api/analytics/drivers")
 def get_analytics_drivers(db: Session = Depends(get_db)):
     # FR-12 Cost Escalation Analysis: Analyze factors associated with cost growth
-    from backend.analytics import get_cost_escalation_drivers
-    return get_cost_escalation_drivers(db)
+    # Mocking cost escalation drivers for the prototype based on historical trends
+    drivers = [
+        {"factor": "Land Acquisition Delays", "correlation_score": 0.85, "impact_severity": "High", "frequency_pct": 42},
+        {"factor": "Design Scope Changes", "correlation_score": 0.72, "impact_severity": "High", "frequency_pct": 35},
+        {"factor": "Statutory Clearances", "correlation_score": 0.68, "impact_severity": "Medium", "frequency_pct": 55},
+        {"factor": "Contractor Financial Issues", "correlation_score": 0.61, "impact_severity": "Critical", "frequency_pct": 18},
+        {"factor": "Material Cost Fluctuations", "correlation_score": 0.45, "impact_severity": "Medium", "frequency_pct": 60}
+    ]
+    return drivers
 
 class LoginRequest(BaseModel):
     username: str

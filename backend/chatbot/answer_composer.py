@@ -189,7 +189,6 @@ STRICT RULES:
 3. Do NOT invent risk reasons, project names, or percentages.
 4. Keep the answer under 200 words.
 5. Cite sector names and counts directly from the data.
-6. Use Markdown tables to format the sector summary nicely. Include columns for Sector, Projects, Critical, High, Avg Cost Overrun, and Avg Delay.
 
 Data (as of {as_of_date}):
 {data_block}
@@ -232,7 +231,7 @@ STRICT RULES:
 3. Do NOT invent explanations, paraphrase risk scores loosely, or add context not in the data.
 4. Reference each project by its ID.
 5. Keep the answer clear and under 300 words.
-6. For comparisons and lists: structure the answer using a beautiful Markdown table where appropriate to clearly compare the specific metrics mentioned.
+6. For comparisons: structure the answer to clearly compare the specific metrics mentioned.
 
 Retrieved project data (as of {as_of_date}):
 {data_block}

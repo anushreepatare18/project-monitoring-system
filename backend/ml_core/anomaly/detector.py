@@ -1,292 +1,136 @@
-"""
-PRAGYA AI — Anomaly Detection (Task 6)
-
-Two-stage anomaly system:
-  Stage 1: Rule-based checks (fast, deterministic, human-readable triggers)
-  Stage 2: Isolation Forest on update-to-update deltas (unsupervised ML)
-
-Output: anomaly_score in [0, 1], flag, and list of specific trigger strings.
-"""
-
-from __future__ import annotations
-
-import os
-import pickle
-from typing import Any, Dict, List, Tuple
-
-import numpy as np
 import pandas as pd
+import numpy as np
 from sklearn.ensemble import IsolationForest
-
-REGISTRY_DIR = "backend/ml_core/registry"
-
-# ── Delta feature extraction ──────────────────────────────────────────────────
-
-DELTA_FEATURES = ["prog_velocity", "exp_velocity", "date_shift_days", "rev_cost_jump_pct"]
-
-
-def _compute_deltas(project_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Compute update-to-update delta features for one project.
-
-    Parameters
-    ----------
-    project_df : pd.DataFrame  sorted by update_date (ascending)
-
-    Returns
-    -------
-    pd.DataFrame  with one row per consecutive pair (rows from index 1 onwards)
-    """
-    if len(project_df) < 2:
-        return pd.DataFrame(columns=DELTA_FEATURES)
-
-    df = project_df.copy().reset_index(drop=True)
-    df["update_date"] = pd.to_datetime(df["update_date"])
-    df["expected_completion_date"] = pd.to_datetime(
-        df["expected_completion_date"], errors="coerce"
-    )
-
-    df["_days_gap"]   = df["update_date"].diff().dt.days.clip(lower=1)
-    df["_prog_jump"]  = df["physical_progress_pct"].diff().fillna(0.0)
-    df["_exp_spike"]  = df["cumulative_expenditure"].diff().fillna(0.0)
-    df["_date_shift"] = df["expected_completion_date"].diff().dt.days.fillna(0.0)
-
-    sanctioned = df["sanctioned_cost"].iloc[0]
-    rev_prev   = df["revised_cost"].shift(1).fillna(df["revised_cost"])
-    df["_rev_cost_jump_pct"] = (
-        (df["revised_cost"] - rev_prev) / (sanctioned + 1e-9)
-    ).fillna(0.0) * 100.0
-
-    df["prog_velocity"] = df["_prog_jump"] / df["_days_gap"]
-    df["exp_velocity"]  = df["_exp_spike"] / (sanctioned + 1e-9) * 100.0  # % of sanctioned per day
-    df["date_shift_days"]   = df["_date_shift"]
-    df["rev_cost_jump_pct"] = df["_rev_cost_jump_pct"]
-
-    return df.iloc[1:][DELTA_FEATURES].fillna(0.0)
-
-
-# ── Rule-based checks ─────────────────────────────────────────────────────────
-
-def _rule_checks(
-    project_df: pd.DataFrame,
-) -> Tuple[float, List[str]]:
-    """
-    Apply hard rule-based anomaly checks.
-
-    Returns (penalty_score_addition [0,1], list of trigger strings)
-    """
-    if project_df.empty:
-        return 0.0, []
-
-    df = project_df.sort_values("update_date").reset_index(drop=True)
-    latest  = df.iloc[-1]
-    prev    = df.iloc[-2] if len(df) >= 2 else None
-    triggers: List[str] = []
-    score = 0.0
-
-    # Bounds checks
-    phys = latest.get("physical_progress_pct", 0)
-    if phys > 100:
-        triggers.append(f"Physical progress {phys:.1f}% exceeds 100% — data entry error")
-        score = max(score, 1.0)
-    if phys < 0:
-        triggers.append(f"Physical progress {phys:.1f}% is negative — data entry error")
-        score = max(score, 1.0)
-
-    sanc = float(latest.get("sanctioned_cost", 1) or 1)
-    cum  = float(latest.get("cumulative_expenditure", 0) or 0)
-    if cum > sanc * 2.5:
-        triggers.append(
-            f"Expenditure (₹{cum:.1f} Cr) is more than 2.5× the sanctioned cost (₹{sanc:.1f} Cr)"
-        )
-        score = max(score, 0.9)
-
-    rev  = float(latest.get("revised_cost", sanc) or sanc)
-    if rev > sanc * 3.0:
-        triggers.append(
-            f"Revised cost (₹{rev:.1f} Cr) exceeds 3× the sanctioned amount — implausible"
-        )
-        score = max(score, 0.85)
-
-    # Jump checks (vs previous update)
-    if prev is not None:
-        prev_phys = float(prev.get("physical_progress_pct", 0) or 0)
-        prog_jump = phys - prev_phys
-        if prog_jump > 30:
-            triggers.append(
-                f"Physical progress jumped {prog_jump:.1f}% in one update — implausible"
-            )
-            score = max(score, 0.80)
-        if prog_jump < -10:
-            triggers.append(
-                f"Physical progress regressed {abs(prog_jump):.1f}% — negative progress reported"
-            )
-            score = max(score, 0.75)
-
-        prev_cum = float(prev.get("cumulative_expenditure", 0) or 0)
-        exp_jump = cum - prev_cum
-        if exp_jump > sanc * 0.30:
-            triggers.append(
-                f"Expenditure spiked by ₹{exp_jump:.1f} Cr (>{30:.0f}% of sanctioned) in one update"
-            )
-            score = max(score, 0.75)
-
-    # Staleness check
-    try:
-        last_upd = pd.Timestamp(latest.get("update_date", "2000-01-01"))
-        days_stale = (pd.Timestamp.today() - last_upd).days
-        if days_stale > 180:
-            triggers.append(f"No update received for {days_stale} days — project may be stalled")
-            score = max(score, 0.55)
-    except Exception:
-        pass
-
-    # Completion date in the past with unfinished progress
-    try:
-        exp_comp = pd.Timestamp(latest.get("expected_completion_date", "2099-01-01"))
-        if exp_comp < pd.Timestamp.today() and phys < 95:
-            triggers.append(
-                f"Expected completion date ({exp_comp.date()}) has passed but project is only "
-                f"{phys:.1f}% complete"
-            )
-            score = max(score, 0.65)
-    except Exception:
-        pass
-
-    return float(score), triggers
-
-
-# ── Anomaly Detector class ─────────────────────────────────────────────────────
+import pickle
+import os
 
 class AnomalyDetector:
-    """
-    Two-stage anomaly detector.
-
-    fit(df) — trains IsolationForest on full dataset deltas.
-    detect(project_df) → (is_anomalous, score, triggers)
-    """
-
-    def __init__(self, random_state: int = 42, contamination: float = 0.05):
-        self.iso_forest = IsolationForest(
-            n_estimators=200,
-            contamination=contamination,
-            random_state=random_state,
-            n_jobs=-1,
-        )
+    def __init__(self, random_state=42):
+        self.iso_forest = IsolationForest(contamination=0.05, random_state=random_state)
         self.is_fitted = False
-        self._training_scale: Dict[str, float] = {}
-
-    # ── Training ─────────────────────────────────────────────────────────────
-
-    def fit(self, df: pd.DataFrame) -> "AnomalyDetector":
+        
+    def _compute_deltas(self, project_updates: pd.DataFrame):
         """
-        Train IsolationForest on update-to-update deltas across all projects.
+        Computes update-to-update deltas for a single project's history.
+        Assumes project_updates is sorted by date.
         """
-        df = df.copy()
-        df["update_date"] = pd.to_datetime(df["update_date"])
-
-        all_deltas: List[pd.DataFrame] = []
-        for _pid, grp in df.groupby("project_id"):
-            grp_sorted = grp.sort_values("update_date")
-            d = _compute_deltas(grp_sorted)
-            if not d.empty:
-                all_deltas.append(d)
-
-        if not all_deltas:
-            print("[WARN] No delta data available for anomaly detector training.")
-            return self
-
-        full = pd.concat(all_deltas, ignore_index=True).fillna(0.0)
-
-        # Store scale for score normalisation
-        for col in DELTA_FEATURES:
-            self._training_scale[col] = float(full[col].std() or 1.0)
-
-        self.iso_forest.fit(full[DELTA_FEATURES])
-        self.is_fitted = True
-
-        os.makedirs(REGISTRY_DIR, exist_ok=True)
-        with open(f"{REGISTRY_DIR}/anomaly_detector.pkl", "wb") as f:
-            pickle.dump(self, f)
-
-        print(
-            f"[AnomalyDetector] Trained on {len(full):,} delta rows "
-            f"from {df['project_id'].nunique():,} projects. Saved to registry."
-        )
-        return self
-
-    # ── Inference ────────────────────────────────────────────────────────────
-
-    def detect(
-        self, project_df: pd.DataFrame
-    ) -> Tuple[bool, float, List[str]]:
+        if len(project_updates) < 2:
+            return pd.DataFrame()
+            
+        df = project_updates.copy()
+        
+        # Calculate deltas
+        df['prog_jump'] = df['physical_progress_pct'].diff().fillna(0)
+        df['exp_spike'] = df['cumulative_expenditure'].diff().fillna(0)
+        
+        # For dates, calculate days shift in expected completion
+        df['expected_completion_date'] = pd.to_datetime(df['expected_completion_date'])
+        df['date_shift_days'] = df['expected_completion_date'].diff().dt.days.fillna(0)
+        
+        # Calculate time between updates to normalize jumps
+        df['update_date'] = pd.to_datetime(df['update_date'])
+        df['days_since_last'] = df['update_date'].diff().dt.days.replace(0, 1) # Avoid div by zero
+        
+        df['prog_velocity'] = df['prog_jump'] / df['days_since_last']
+        df['exp_velocity'] = df['exp_spike'] / df['days_since_last']
+        
+        # Only return the rows where we actually have a previous state to compare to (i.e. not the first row)
+        return df.iloc[1:]
+        
+    def fit(self, dataset: pd.DataFrame):
         """
-        Run anomaly detection on a project's update history.
-
-        Parameters
-        ----------
-        project_df : pd.DataFrame
-            All update rows for ONE project (unsorted).
-
-        Returns
-        -------
-        Tuple[bool, float, list[str]]
-            is_anomalous : True if flagged
-            score        : normalised anomaly severity [0, 1]
-            triggers     : list of human-readable trigger descriptions
+        Fits the IsolationForest on historical deltas across all projects.
         """
-        if project_df.empty:
-            return False, 0.0, []
-
-        df_sorted = project_df.sort_values("update_date").reset_index(drop=True)
-
-        # ── Stage 1: Rules ────────────────────────────────────────────────
-        rule_score, triggers = _rule_checks(df_sorted)
-
-        # ── Stage 2: ML (if fitted and ≥2 updates) ───────────────────────
-        ml_score = 0.0
-        if self.is_fitted and len(df_sorted) >= 2:
-            deltas = _compute_deltas(df_sorted)
+        all_deltas = []
+        for pid, grp in dataset.groupby('project_id'):
+            grp_sorted = grp.sort_values('update_date')
+            deltas = self._compute_deltas(grp_sorted)
             if not deltas.empty:
-                latest_delta = deltas.iloc[[-1]][DELTA_FEATURES].fillna(0.0)
-                raw_score = self.iso_forest.score_samples(latest_delta)[0]
-                # score_samples returns negative; lower = more anomalous
-                # Typical range roughly -0.9 to -0.1
-                ml_score = float(np.clip((-raw_score - 0.1) / 0.8, 0.0, 1.0))
-
-                if ml_score > 0.55:
-                    # Identify which delta feature is most extreme
-                    row = latest_delta.iloc[0]
-                    for col in DELTA_FEATURES:
-                        scale = self._training_scale.get(col, 1.0)
-                        if abs(row[col]) > 3.0 * scale:
-                            triggers.append(f"Statistical outlier in '{col}' (ML-detected)")
-
-        # ── Combine ───────────────────────────────────────────────────────
-        combined_score = float(max(rule_score, ml_score * 0.7))
-        is_anomalous   = combined_score > 0.40 or len(triggers) > 0
-
-        return is_anomalous, round(combined_score, 4), list(set(triggers))
-
-
-# ── Module-level helper ────────────────────────────────────────────────────────
-
-def load_detector() -> Optional[AnomalyDetector]:
-    path = f"{REGISTRY_DIR}/anomaly_detector.pkl"
-    if os.path.exists(path):
-        with open(path, "rb") as f:
-            return pickle.load(f)
-    return None
-
+                all_deltas.append(deltas)
+                
+        if not all_deltas:
+            print("Not enough data to train anomaly detector.")
+            return
+            
+        full_deltas = pd.concat(all_deltas, ignore_index=True)
+        features = full_deltas[['prog_velocity', 'exp_velocity', 'date_shift_days']].fillna(0)
+        
+        self.iso_forest.fit(features)
+        self.is_fitted = True
+        
+        # Save model
+        os.makedirs('backend/ml_core/registry', exist_ok=True)
+        with open('backend/ml_core/registry/anomaly_detector.pkl', 'wb') as f:
+            pickle.dump(self, f)
+            
+        print("Anomaly detector trained and saved.")
+        
+    def detect(self, project_updates: pd.DataFrame):
+        """
+        Runs anomaly detection on the LATEST update of a project.
+        project_updates must contain at least the 2 most recent updates.
+        Returns (is_anomalous: bool, score: float, triggers: list)
+        """
+        if not self.is_fitted:
+            raise ValueError("Model is not fitted. Train first or load from registry.")
+            
+        if len(project_updates) < 2:
+            return False, 0.0, []
+            
+        grp_sorted = project_updates.sort_values('update_date')
+        deltas = self._compute_deltas(grp_sorted)
+        latest_delta = deltas.iloc[-1:]
+        
+        features = latest_delta[['prog_velocity', 'exp_velocity', 'date_shift_days']].fillna(0)
+        
+        # Iso forest predict: -1 for outliers, 1 for inliers
+        prediction = self.iso_forest.predict(features)[0]
+        score = self.iso_forest.score_samples(features)[0] # Lower score = more anomalous
+        
+        # Normalize score somewhat to [0, 1] where 1 is highly anomalous
+        # (Assuming typical scores range from roughly -0.8 to -0.3)
+        normalized_score = min(1.0, max(0.0, (-score - 0.3) / 0.5))
+        
+        is_ml_anomalous = (prediction == -1)
+        triggers = []
+        
+        # ML Triggers based on feature values if anomalous
+        if is_ml_anomalous:
+            prog_v = features['prog_velocity'].iloc[0]
+            if prog_v > 1.0: # Very fast progress
+                triggers.append("Implausible jump in physical progress")
+            elif prog_v < 0:
+                triggers.append("Negative progress reported")
+                
+            exp_v = features['exp_velocity'].iloc[0]
+            # Since expenditure scale varies, we just use a generic flag if ML caught it and it's large
+            if abs(exp_v) > latest_delta['sanctioned_cost'].iloc[0] * 0.1: # Jumped 10% of total cost in one update
+                triggers.append("Sudden spike in expenditure")
+                
+            date_shift = features['date_shift_days'].iloc[0]
+            if abs(date_shift) > 365:
+                triggers.append("Expected completion date shifted by over a year")
+                
+        # Rule-based checks (independent of ML model)
+        latest = grp_sorted.iloc[-1]
+        
+        if latest['cumulative_expenditure'] > latest['sanctioned_cost'] * 2.0:
+            triggers.append("Expenditure is more than double the sanctioned cost")
+            normalized_score = max(normalized_score, 0.9)
+            
+        if latest['physical_progress_pct'] > 100 or latest['physical_progress_pct'] < 0:
+            triggers.append("Physical progress percentage out of bounds [0-100]")
+            normalized_score = 1.0
+            
+        is_anomalous = is_ml_anomalous or len(triggers) > 0
+        
+        return is_anomalous, float(normalized_score), list(set(triggers))
 
 if __name__ == "__main__":
-    import sys
-
-    csv_path = sys.argv[1] if len(sys.argv) > 1 else "dataset.csv"
-    print(f"Training anomaly detector on {csv_path} ...")
+    print("Training anomaly detector on dataset.csv...")
     try:
-        df = pd.read_csv(csv_path)
+        df = pd.read_csv("dataset.csv")
         detector = AnomalyDetector()
         detector.fit(df)
-    except Exception as exc:
-        print(f"Failed: {exc}")
+    except Exception as e:
+        print(f"Failed to train anomaly detector: {e}")
