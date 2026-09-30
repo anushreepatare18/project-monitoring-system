@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { 
   Building2, 
@@ -24,23 +26,24 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f7f9] text-slate-800 font-sans selection:bg-emerald-200 selection:text-emerald-900 overflow-x-hidden relative">
+    <div className="min-h-screen bg-[#f4f7f9] dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-sans selection:bg-emerald-200 selection:text-emerald-900 overflow-x-hidden relative">
       
       {/* Navbar */}
       <div className="pt-6 px-6 flex justify-center w-full z-50">
-        <nav className="bg-white/90 backdrop-blur-md rounded-full px-4 py-3 flex items-center justify-between w-full max-w-7xl shadow-sm border border-slate-200">
+        <nav className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md dark:border-slate-800 rounded-full px-4 py-3 flex items-center justify-between w-full max-w-7xl shadow-sm border border-slate-200">
           <div className="flex items-center space-x-3 pl-2">
             <div className="bg-emerald-100 text-emerald-700 font-bold rounded-full w-8 h-8 flex items-center justify-center text-xs">
               PR
             </div>
-            <span className="font-bold text-sm tracking-tight hidden md:block text-slate-800">
+            <span className="font-bold text-sm tracking-tight hidden md:block text-slate-800 dark:text-slate-100">
               Smart Government Project Monitoring <span className="text-emerald-600">and Risk Management System</span>
             </span>
           </div>
           
           <div className="flex items-center space-x-6 pr-2">
-            <Link href="#capabilities" className="text-sm font-semibold text-slate-600 hover:text-emerald-600 transition-colors hidden md:block">Capabilities</Link>
-            <Link href="#workflows" className="text-sm font-semibold text-slate-600 hover:text-emerald-600 transition-colors hidden md:block">Workflows</Link>
+            <Link href="#capabilities" className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors hidden md:block">Capabilities</Link>
+            <Link href="#workflows" className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors hidden md:block">Workflows</Link>
+            <ThemeToggle />
             <button className="bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold py-2 px-6 rounded-full transition-transform hover:scale-105 active:scale-95 shadow-md flex items-center">
               Access Portal
               <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full ml-2"></div>
@@ -55,38 +58,38 @@ export default function LandingPage() {
         {/* Left Column (Text & Stats) */}
         <div className="lg:w-[50%] xl:w-[40%] z-20 shrink-0">
           <h1 className="text-6xl lg:text-5xl xl:text-7xl font-extrabold tracking-tight leading-[1.05] mb-6">
-            <span className="block text-slate-900">Smarter</span>
-            <span className="block text-slate-900 mb-2">Monitoring.</span>
+            <span className="block text-slate-900 dark:text-slate-100">Smarter</span>
+            <span className="block text-slate-900 dark:text-slate-100 mb-2">Monitoring.</span>
             <span className="block text-emerald-500">Stronger</span>
             <span className="block text-emerald-500">Infrastructure.</span>
           </h1>
           
-          <p className="text-slate-600 text-base xl:text-lg leading-relaxed mb-10 max-w-lg font-medium">
+          <p className="text-slate-600 dark:text-slate-400 text-base xl:text-lg leading-relaxed mb-10 max-w-lg font-medium">
             Smart Government Project Monitoring and Risk Management System leverages continuous project data to predict cost overruns, explain risk factors, detect anomalies and generate early warnings — empowering faster, data-driven decisions.
           </p>
           
           <div className="flex space-x-3 xl:space-x-4">
-            <div className="bg-white p-4 xl:p-5 rounded-2xl shadow-sm border border-slate-100 flex-1 hover:-translate-y-1 transition-transform">
+            <div className="bg-white dark:bg-slate-900 p-4 xl:p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex-1 hover:-translate-y-1 transition-transform">
               <div className="bg-emerald-50 w-8 h-8 xl:w-10 xl:h-10 rounded-xl flex items-center justify-center mb-3 xl:mb-4">
                 <BarChart3 className="text-emerald-500 w-4 h-4 xl:w-5 xl:h-5" />
               </div>
-              <div className="text-xl xl:text-2xl font-extrabold text-slate-900">1,981+</div>
+              <div className="text-xl xl:text-2xl font-extrabold text-slate-900 dark:text-slate-100">1,981+</div>
               <div className="text-[9px] xl:text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Active Projects</div>
             </div>
             
-            <div className="bg-white p-4 xl:p-5 rounded-2xl shadow-sm border border-slate-100 flex-1 hover:-translate-y-1 transition-transform">
+            <div className="bg-white dark:bg-slate-900 p-4 xl:p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex-1 hover:-translate-y-1 transition-transform">
               <div className="bg-blue-50 w-8 h-8 xl:w-10 xl:h-10 rounded-xl flex items-center justify-center mb-3 xl:mb-4">
                 <Building2 className="text-blue-500 w-4 h-4 xl:w-5 xl:h-5" />
               </div>
-              <div className="text-xl xl:text-2xl font-extrabold text-slate-900">17</div>
+              <div className="text-xl xl:text-2xl font-extrabold text-slate-900 dark:text-slate-100">17</div>
               <div className="text-[9px] xl:text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Ministries</div>
             </div>
             
-            <div className="bg-white p-4 xl:p-5 rounded-2xl shadow-sm border border-slate-100 flex-1 hover:-translate-y-1 transition-transform">
+            <div className="bg-white dark:bg-slate-900 p-4 xl:p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex-1 hover:-translate-y-1 transition-transform">
               <div className="bg-purple-50 w-8 h-8 xl:w-10 xl:h-10 rounded-xl flex items-center justify-center mb-3 xl:mb-4">
                 <ShieldCheck className="text-purple-500 w-4 h-4 xl:w-5 xl:h-5" />
               </div>
-              <div className="text-xl xl:text-2xl font-extrabold text-slate-900">98%</div>
+              <div className="text-xl xl:text-2xl font-extrabold text-slate-900 dark:text-slate-100">98%</div>
               <div className="text-[9px] xl:text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">AI Accuracy</div>
             </div>
           </div>
@@ -95,32 +98,32 @@ export default function LandingPage() {
         {/* Center Decorative Floating Cards (Hidden on small screens) */}
         <div className="hidden xl:flex relative z-10 w-[240px] h-[500px] pointer-events-none shrink-0 items-center justify-center scale-90 2xl:scale-100 origin-center">
           {/* AI Risk Prediction Card */}
-          <div className="absolute top-4 -left-4 bg-white p-4 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 w-44 animate-[float_6s_ease-in-out_infinite]">
-            <div className="text-xs font-bold text-slate-700 mb-4 text-center">AI Risk Prediction</div>
+          <div className="absolute top-4 -left-4 bg-white dark:bg-slate-900 p-4 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 dark:border-slate-800 w-44 animate-[float_6s_ease-in-out_infinite]">
+            <div className="text-xs font-bold text-slate-700 dark:text-slate-200 mb-4 text-center">AI Risk Prediction</div>
             <div className="relative w-20 h-20 mx-auto mb-3">
               <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                 <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#f1f5f9" strokeWidth="4" />
                 <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#ef4444" strokeWidth="4" strokeDasharray="82, 100" />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-xl font-extrabold text-slate-800">82</span>
+                <span className="text-xl font-extrabold text-slate-800 dark:text-slate-100">82</span>
               </div>
             </div>
             <div className="text-[10px] font-extrabold text-red-500 text-center uppercase tracking-widest bg-red-50 py-1 rounded-md">High Risk</div>
           </div>
 
           {/* SHAP Factors Card */}
-          <div className="absolute top-36 -right-6 bg-white p-4 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 w-48 animate-[float_7s_ease-in-out_infinite_reverse]">
+          <div className="absolute top-36 -right-6 bg-white dark:bg-slate-900 p-4 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 dark:border-slate-800 w-48 animate-[float_7s_ease-in-out_infinite_reverse]">
             <div className="flex justify-between items-center mb-3">
-              <div className="text-xs font-bold text-slate-700">SHAP Factors</div>
+              <div className="text-xs font-bold text-slate-700 dark:text-slate-200">SHAP Factors</div>
               <Activity className="w-3 h-3 text-emerald-500" />
             </div>
             <div className="space-y-3">
-              <div className="flex justify-between items-center border-b border-slate-50 pb-2">
+              <div className="flex justify-between items-center border-b border-slate-50 dark:border-slate-800 pb-2">
                 <span className="text-[10px] font-medium text-slate-500">Milestone Delay</span>
                 <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">+0.28</span>
               </div>
-              <div className="flex justify-between items-center border-b border-slate-50 pb-2">
+              <div className="flex justify-between items-center border-b border-slate-50 dark:border-slate-800 pb-2">
                 <span className="text-[10px] font-medium text-slate-500">Progress Gap</span>
                 <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">+0.22</span>
               </div>
@@ -132,12 +135,12 @@ export default function LandingPage() {
           </div>
 
           {/* Anomaly Detected Card */}
-          <div className="absolute bottom-10 -left-2 bg-white p-4 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 w-52 animate-[float_8s_ease-in-out_infinite]">
+          <div className="absolute bottom-10 -left-2 bg-white dark:bg-slate-900 p-4 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 dark:border-slate-800 w-52 animate-[float_8s_ease-in-out_infinite]">
             <div className="flex items-center space-x-2 mb-2">
               <div className="bg-red-50 p-1.5 rounded-lg">
                 <AlertTriangle className="w-4 h-4 text-red-500" />
               </div>
-              <div className="text-[11px] font-bold text-slate-800">Anomaly Detected</div>
+              <div className="text-[11px] font-bold text-slate-800 dark:text-slate-100">Anomaly Detected</div>
             </div>
             <p className="text-[9px] text-slate-500 leading-relaxed font-medium">
               Unusual cost increase in last 2 updates detected by AI models.
@@ -147,8 +150,8 @@ export default function LandingPage() {
 
         {/* Right Column (Login Panel) */}
         <div className="w-full max-w-md lg:max-w-none lg:w-[45%] xl:w-[35%] mt-16 lg:mt-0 z-20 shrink-0">
-          <div className="bg-white rounded-[2rem] p-8 shadow-2xl shadow-slate-200/50 border border-slate-100 relative overflow-hidden">
-            <h2 className="text-3xl font-extrabold text-slate-900 mb-1">Secure Access</h2>
+          <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-8 shadow-2xl shadow-slate-200/50 border border-slate-100 dark:border-slate-800 relative overflow-hidden">
+            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-1">Secure Access</h2>
             <p className="text-sm font-medium text-slate-500 mb-8">Sign in to the intelligent monitoring portal</p>
             
             <form className="space-y-4 mb-6">
@@ -159,7 +162,7 @@ export default function LandingPage() {
                 <input 
                   type="email" 
                   placeholder="Email Address" 
-                  className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border-none rounded-xl text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none"
+                  className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-950 border-none rounded-xl text-sm font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:bg-white dark:focus:bg-slate-800 transition-all outline-none"
                   defaultValue="demo@pragya.gov.in"
                 />
               </div>
@@ -171,7 +174,7 @@ export default function LandingPage() {
                 <input 
                   type="password" 
                   placeholder="Password" 
-                  className="w-full pl-11 pr-12 py-3.5 bg-slate-50 border-none rounded-xl text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none"
+                  className="w-full pl-11 pr-12 py-3.5 bg-slate-50 dark:bg-slate-950 border-none rounded-xl text-sm font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:bg-white dark:focus:bg-slate-800 transition-all outline-none"
                   defaultValue="password123"
                 />
                 <div className="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer">
@@ -185,7 +188,7 @@ export default function LandingPage() {
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <Briefcase className="h-4 w-4 text-slate-400" />
                   </div>
-                  <select className="w-full pl-11 pr-10 py-3.5 bg-slate-50 border-none rounded-xl text-sm font-semibold text-slate-800 appearance-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none cursor-pointer">
+                  <select className="w-full pl-11 pr-10 py-3.5 bg-slate-50 dark:bg-slate-950 border-none rounded-xl text-sm font-semibold text-slate-800 dark:text-slate-200 appearance-none focus:ring-2 focus:ring-emerald-500 focus:bg-white dark:focus:bg-slate-800 transition-all outline-none cursor-pointer">
                     <option value="" disabled>Choose your role...</option>
                     <option value="admin">System Administrator</option>
                     <option value="ministry">Ministry Official</option>
@@ -214,21 +217,21 @@ export default function LandingPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <button onClick={() => handleDemoLogin('admin')} className="flex items-center justify-center space-x-2 py-3 border border-slate-200 rounded-xl hover:border-emerald-500 hover:bg-emerald-50 transition-colors group">
-                <ShieldCheck className="w-4 h-4 text-slate-500 group-hover:text-emerald-600" />
-                <span className="text-xs font-bold text-slate-700 group-hover:text-emerald-700">Admin</span>
+              <button onClick={() => handleDemoLogin('admin')} className="flex items-center justify-center space-x-2 py-3 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors group">
+                <ShieldCheck className="w-4 h-4 text-slate-500 dark:text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400" />
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 group-hover:text-emerald-700 dark:group-hover:text-emerald-400">Admin</span>
               </button>
-              <button onClick={() => handleDemoLogin('ministry')} className="flex items-center justify-center space-x-2 py-3 border border-slate-200 rounded-xl hover:border-emerald-500 hover:bg-emerald-50 transition-colors group">
-                <Building2 className="w-4 h-4 text-slate-500 group-hover:text-emerald-600" />
-                <span className="text-xs font-bold text-slate-700 group-hover:text-emerald-700">Ministry</span>
+              <button onClick={() => handleDemoLogin('ministry')} className="flex items-center justify-center space-x-2 py-3 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors group">
+                <Building2 className="w-4 h-4 text-slate-500 dark:text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400" />
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 group-hover:text-emerald-700 dark:group-hover:text-emerald-400">Ministry</span>
               </button>
-              <button onClick={() => handleDemoLogin('officer')} className="flex items-center justify-center space-x-2 py-3 border border-slate-200 rounded-xl hover:border-emerald-500 hover:bg-emerald-50 transition-colors group">
-                <Briefcase className="w-4 h-4 text-slate-500 group-hover:text-emerald-600" />
-                <span className="text-xs font-bold text-slate-700 group-hover:text-emerald-700">Officer</span>
+              <button onClick={() => handleDemoLogin('officer')} className="flex items-center justify-center space-x-2 py-3 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors group">
+                <Briefcase className="w-4 h-4 text-slate-500 dark:text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400" />
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 group-hover:text-emerald-700 dark:group-hover:text-emerald-400">Officer</span>
               </button>
-              <button onClick={() => handleDemoLogin('public')} className="flex items-center justify-center space-x-2 py-3 border border-slate-200 rounded-xl hover:border-emerald-500 hover:bg-emerald-50 transition-colors group">
-                <User className="w-4 h-4 text-slate-500 group-hover:text-emerald-600" />
-                <span className="text-xs font-bold text-slate-700 group-hover:text-emerald-700">Public</span>
+              <button onClick={() => handleDemoLogin('public')} className="flex items-center justify-center space-x-2 py-3 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors group">
+                <User className="w-4 h-4 text-slate-500 dark:text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400" />
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 group-hover:text-emerald-700 dark:group-hover:text-emerald-400">Public</span>
               </button>
             </div>
           </div>
@@ -242,55 +245,55 @@ export default function LandingPage() {
       </div>
 
       {/* Capabilities Section */}
-      <section id="capabilities" className="w-full bg-white py-24 border-t border-slate-100 relative">
+      <motion.section initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }} id="capabilities" className="w-full bg-white dark:bg-slate-950 py-24 border-t border-slate-100 dark:border-slate-900 relative">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-[10px] font-extrabold text-emerald-600 uppercase tracking-widest mb-2">Platform Capabilities</h2>
-            <h3 className="text-4xl font-extrabold text-slate-900 tracking-tight">AI-Powered Risk Mitigation</h3>
-            <p className="mt-4 text-slate-500 max-w-2xl mx-auto font-medium">
+            <h3 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">AI-Powered Risk Mitigation</h3>
+            <p className="mt-4 text-slate-500 dark:text-slate-400 max-w-2xl mx-auto font-medium">
               We leverage advanced machine learning to transform static project updates into dynamic, proactive risk intelligence for ministries and executing agencies.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Feature 1 */}
-            <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 hover:shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-2 transition-all duration-300 group">
-              <div className="bg-white w-14 h-14 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <div className="bg-slate-50 dark:bg-slate-900/50 rounded-[2rem] p-8 border border-slate-100 dark:border-slate-800 hover:shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-2 transition-all duration-300 group">
+              <div className="bg-white dark:bg-slate-800 w-14 h-14 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Activity className="text-emerald-500 w-7 h-7" />
               </div>
-              <h4 className="text-xl font-bold text-slate-900 mb-3">Early Warning System</h4>
-              <p className="text-sm text-slate-600 leading-relaxed font-medium">
+              <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Early Warning System</h4>
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
                 Detect anomalies in financial burn rates and physical progress using real-time data ingestion. Receive alerts weeks before a minor delay becomes a critical bottleneck.
               </p>
             </div>
 
             {/* Feature 2 */}
-            <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-2 transition-all duration-300 group">
-              <div className="bg-white w-14 h-14 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <div className="bg-slate-50 dark:bg-slate-900/50 rounded-[2rem] p-8 border border-slate-100 dark:border-slate-800 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-2 transition-all duration-300 group">
+              <div className="bg-white dark:bg-slate-800 w-14 h-14 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <BarChart3 className="text-blue-500 w-7 h-7" />
               </div>
-              <h4 className="text-xl font-bold text-slate-900 mb-3">Explainable AI (SHAP)</h4>
-              <p className="text-sm text-slate-600 leading-relaxed font-medium">
+              <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Explainable AI (SHAP)</h4>
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
                 Don't just get a risk score—understand it. Our models break down exactly which factors (e.g., land acquisition, milestone delay) are driving the project's risk profile.
               </p>
             </div>
 
             {/* Feature 3 */}
-            <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 hover:shadow-xl hover:shadow-purple-500/10 hover:-translate-y-2 transition-all duration-300 group">
-              <div className="bg-white w-14 h-14 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <div className="bg-slate-50 dark:bg-slate-900/50 rounded-[2rem] p-8 border border-slate-100 dark:border-slate-800 hover:shadow-xl hover:shadow-purple-500/10 hover:-translate-y-2 transition-all duration-300 group">
+              <div className="bg-white dark:bg-slate-800 w-14 h-14 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <ShieldCheck className="text-purple-500 w-7 h-7" />
               </div>
-              <h4 className="text-xl font-bold text-slate-900 mb-3">Multi-Tier Security</h4>
-              <p className="text-sm text-slate-600 leading-relaxed font-medium">
+              <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Multi-Tier Security</h4>
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
                 Role-based access control guarantees data integrity. Ministry officials, state administrators, and field officers see exactly what they need to manage their portfolios safely.
               </p>
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Workflows Section */}
-      <section id="workflows" className="w-full bg-slate-900 py-24 relative overflow-hidden">
+      <motion.section initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6 }} viewport={{ once: true }} id="workflows" className="w-full bg-slate-900 py-24 relative overflow-hidden">
         {/* Abstract background shapes */}
         <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none"></div>
         <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl pointer-events-none"></div>
@@ -336,7 +339,81 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
+
+      {/* Live Statistics / Map Section */}
+      <motion.section initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }} id="statistics" className="w-full bg-slate-50 dark:bg-slate-900 py-24 border-t border-slate-200 dark:border-slate-800 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col lg:flex-row items-center gap-16">
+            
+            {/* Text & Stats */}
+            <div className="lg:w-1/2">
+              <h2 className="text-[10px] font-extrabold text-emerald-600 uppercase tracking-widest mb-2">Live Monitoring</h2>
+              <h3 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-6">National Infrastructure Pulse</h3>
+              <p className="text-slate-600 dark:text-slate-400 font-medium leading-relaxed mb-10">
+                Track the health of critical infrastructure projects across the nation in real-time. Our models continuously scan for deviations in funding and physical milestones, providing an unparalleled macro-view.
+              </p>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                  <div className="text-3xl font-black text-slate-900 dark:text-white mb-1">₹142k<span className="text-lg text-slate-500 font-bold"> Cr</span></div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Monitored Value</div>
+                </div>
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                  <div className="text-3xl font-black text-emerald-600 mb-1">1,981</div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Projects</div>
+                </div>
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                  <div className="text-3xl font-black text-blue-600 mb-1">182</div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Issues Resolved</div>
+                </div>
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                  <div className="text-3xl font-black text-red-500 mb-1">47</div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">High Risk Alerts</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Stylized Network / Map Graphic */}
+            <div className="lg:w-1/2 w-full h-[400px] relative">
+              <div className="absolute inset-0 bg-white dark:bg-slate-950 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden flex items-center justify-center">
+                {/* Background Grid */}
+                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9IiNlMmU4ZjAiLz48L3N2Zz4=')] opacity-50"></div>
+                
+                {/* Nodes */}
+                <div className="relative w-full h-full max-w-[400px] max-h-[300px]">
+                  {/* Node 1 */}
+                  <div className="absolute top-[20%] left-[20%] w-3 h-3 bg-emerald-500 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.8)] animate-pulse">
+                    <div className="absolute -top-6 -left-6 bg-white dark:bg-slate-800 text-[9px] font-bold text-slate-600 dark:text-slate-300 px-2 py-1 rounded shadow border border-slate-100 dark:border-slate-700">North Region</div>
+                  </div>
+                  {/* Node 2 */}
+                  <div className="absolute top-[40%] right-[30%] w-4 h-4 bg-red-500 rounded-full shadow-[0_0_15px_rgba(239,68,68,0.8)]">
+                    <div className="absolute top-6 -left-10 bg-white dark:bg-slate-800 text-[9px] font-bold text-slate-600 dark:text-slate-300 px-2 py-1 rounded shadow border border-slate-100 dark:border-slate-700 z-10 flex items-center space-x-1">
+                      <AlertTriangle className="w-3 h-3 text-red-500" />
+                      <span>Highway Delay</span>
+                    </div>
+                  </div>
+                  {/* Node 3 */}
+                  <div className="absolute bottom-[25%] left-[40%] w-3 h-3 bg-emerald-500 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.8)] animate-pulse"></div>
+                  {/* Node 4 */}
+                  <div className="absolute bottom-[40%] right-[15%] w-2 h-2 bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.8)]"></div>
+                  {/* Node 5 */}
+                  <div className="absolute top-[60%] left-[15%] w-3 h-3 bg-emerald-500 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.8)] animate-pulse"></div>
+
+                  {/* Connecting lines */}
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
+                    <path d="M80 60 L160 220" stroke="#e2e8f0" strokeWidth="2" strokeDasharray="4 4" />
+                    <path d="M280 120 L160 220" stroke="#e2e8f0" strokeWidth="2" strokeDasharray="4 4" />
+                    <path d="M280 120 L340 180" stroke="#e2e8f0" strokeWidth="2" strokeDasharray="4 4" />
+                    <path d="M80 60 L60 180" stroke="#e2e8f0" strokeWidth="2" strokeDasharray="4 4" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </motion.section>
     </div>
   );
 }
