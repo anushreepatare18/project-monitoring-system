@@ -453,30 +453,15 @@ def get_project_explanation(project_id: str, db: Session = Depends(get_db)):
 
 @app.get("/api/projects/{project_id}/benchmark")
 def get_project_benchmark(project_id: str, db: Session = Depends(get_db)):
-    project = db.query(Project).filter(Project.id == project_id).first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-        
-    peers = db.query(Project).filter(Project.sector == project.sector).all()
+    from backend.analytics import compute_project_benchmarks
+    from datetime import datetime
     
-    if not peers:
-        return {"error": "No peers found"}
+    result = compute_project_benchmarks(project_id, datetime.utcnow(), db)
+    if not result:
+        raise HTTPException(status_code=404, detail="Project or peers not found")
         
-    cost_overruns = sorted([p.cost_overrun_pct for p in peers])
-    delays = sorted([p.delay_months for p in peers])
-    
-    # Calculate percentile
-    def get_percentile(val, arr):
-        if not arr: return 0
-        return sum(1 for x in arr if x < val) / len(arr) * 100
-        
-    return {
-        "project_id": project.id,
-        "sector": project.sector,
-        "peer_count": len(peers),
-        "cost_overrun_percentile": get_percentile(project.cost_overrun_pct, cost_overruns),
-        "delay_percentile": get_percentile(project.delay_months, delays)
-    }
+    db.commit() # Save the benchmark result log
+    return result
 
 @app.get("/api/portfolio/summary")
 def get_portfolio_summary(db: Session = Depends(get_db)):
@@ -551,15 +536,8 @@ def get_public_projects(db: Session = Depends(get_db)):
 @app.get("/api/analytics/drivers")
 def get_analytics_drivers(db: Session = Depends(get_db)):
     # FR-12 Cost Escalation Analysis: Analyze factors associated with cost growth
-    # Mocking cost escalation drivers for the prototype based on historical trends
-    drivers = [
-        {"factor": "Land Acquisition Delays", "correlation_score": 0.85, "impact_severity": "High", "frequency_pct": 42},
-        {"factor": "Design Scope Changes", "correlation_score": 0.72, "impact_severity": "High", "frequency_pct": 35},
-        {"factor": "Statutory Clearances", "correlation_score": 0.68, "impact_severity": "Medium", "frequency_pct": 55},
-        {"factor": "Contractor Financial Issues", "correlation_score": 0.61, "impact_severity": "Critical", "frequency_pct": 18},
-        {"factor": "Material Cost Fluctuations", "correlation_score": 0.45, "impact_severity": "Medium", "frequency_pct": 60}
-    ]
-    return drivers
+    from backend.analytics import get_cost_escalation_drivers
+    return get_cost_escalation_drivers(db)
 
 class LoginRequest(BaseModel):
     username: str
