@@ -1,0 +1,5 @@
+Model,PR-AUC,Recall,Precision,F1,Brier
+CatBoost,0.9982,0.983,0.9698,0.9764,0.0093
+XGBoost,0.9968,0.9813,0.978,0.9797,0.0095
+RandomForest,0.9914,0.9762,0.9729,0.9746,0.0134
+LogisticRegression,0.9867,0.9474,0.9704,0.9588,0.017

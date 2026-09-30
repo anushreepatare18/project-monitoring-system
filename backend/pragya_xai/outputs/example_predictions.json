@@ -1,0 +1,296 @@
+[
+  {
+    "project_id": "PRJ-52EB8AA4",
+    "as_of_date": "2025-08-09",
+    "target": "label_overrun",
+    "risk_probability": 0.9988,
+    "risk_band": "High",
+    "top_reasons": [
+      "Money spent (2.26x) significantly exceeds physical progress, suggesting cost inefficiency, which significantly raises risk.",
+      "Cost growth is 3.7% above the sanctioned amount, which significantly raises risk.",
+      "The expected completion date has been revised 1 time(s), which significantly raises risk.",
+      "Sector is Bridge, which significantly raises risk.",
+      "N Updates So Far is 1.18, which significantly lowers risk."
+    ],
+    "shap_contributions": [
+      {
+        "feature": "expenditure_to_progress_ratio",
+        "value": 2.2608673539228987,
+        "impact": 4.705950771106627,
+        "explanation": "Money spent (2.26x) significantly exceeds physical progress, suggesting cost inefficiency, which significantly raises risk."
+      },
+      {
+        "feature": "cost_growth_pct",
+        "value": 3.6778061207455055,
+        "impact": 3.1923666237435313,
+        "explanation": "Cost growth is 3.7% above the sanctioned amount, which significantly raises risk."
+      },
+      {
+        "feature": "count_of_revised_dates",
+        "value": 1.7391765242010815,
+        "impact": 0.40818446954611093,
+        "explanation": "The expected completion date has been revised 1 time(s), which significantly raises risk."
+      },
+      {
+        "feature": "sector",
+        "value": "Bridge",
+        "impact": 0.3396438902237674,
+        "explanation": "Sector is Bridge, which significantly raises risk."
+      },
+      {
+        "feature": "n_updates_so_far",
+        "value": 1.18373057465416,
+        "impact": -0.3073002059346532,
+        "explanation": "N Updates So Far is 1.18, which significantly lowers risk."
+      }
+    ],
+    "chart_path": "C:\\Users\\RAMESH PATARE\\OneDrive\\Desktop\\SIH\\SIH26103\\backend\\pragya_xai\\outputs\\PRJ-52EB8AA4_label_overrun_20250809.png",
+    "model_version": "1.0.0",
+    "feature_set_version": "xai_v1.0"
+  },
+  {
+    "project_id": "PRJ-52EB8AA4",
+    "as_of_date": "2025-08-09",
+    "target": "label_delay",
+    "risk_probability": 0.8703,
+    "risk_band": "High",
+    "top_reasons": [
+      "The expected completion date has been revised 1 time(s), which significantly raises risk.",
+      "Money spent (2.26x) significantly exceeds physical progress, suggesting cost inefficiency, which significantly raises risk.",
+      "N Updates So Far is 1.18, which significantly lowers risk.",
+      "Planned Duration Days is 0.91, which significantly lowers risk.",
+      "Ministry is Ministry of Urban Development, which significantly lowers risk."
+    ],
+    "shap_contributions": [
+      {
+        "feature": "count_of_revised_dates",
+        "value": 1.7391765242010815,
+        "impact": 3.3575811175872476,
+        "explanation": "The expected completion date has been revised 1 time(s), which significantly raises risk."
+      },
+      {
+        "feature": "expenditure_to_progress_ratio",
+        "value": 2.2608673539228987,
+        "impact": 0.9686158779453689,
+        "explanation": "Money spent (2.26x) significantly exceeds physical progress, suggesting cost inefficiency, which significantly raises risk."
+      },
+      {
+        "feature": "n_updates_so_far",
+        "value": 1.18373057465416,
+        "impact": -0.33577313225741756,
+        "explanation": "N Updates So Far is 1.18, which significantly lowers risk."
+      },
+      {
+        "feature": "planned_duration_days",
+        "value": 0.9086131988537146,
+        "impact": -0.2917358375288643,
+        "explanation": "Planned Duration Days is 0.91, which significantly lowers risk."
+      },
+      {
+        "feature": "ministry",
+        "value": "Ministry of Urban Development",
+        "impact": -0.27644727825376597,
+        "explanation": "Ministry is Ministry of Urban Development, which significantly lowers risk."
+      }
+    ],
+    "chart_path": "C:\\Users\\RAMESH PATARE\\OneDrive\\Desktop\\SIH\\SIH26103\\backend\\pragya_xai\\outputs\\PRJ-52EB8AA4_label_delay_20250809.png",
+    "model_version": "1.0.0",
+    "feature_set_version": "xai_v1.0"
+  },
+  {
+    "project_id": "PRJ-A95D12D7",
+    "as_of_date": "2023-06-03",
+    "target": "label_overrun",
+    "risk_probability": 0.0019,
+    "risk_band": "Low",
+    "top_reasons": [
+      "Expenditure (-0.80x) is in line with physical progress, which lowers risk.",
+      "Project is 0.3% under budget, which significantly lowers risk.",
+      "N Updates So Far is 1.82, which significantly lowers risk.",
+      "The expected completion date has been revised 1 time(s), which significantly raises risk.",
+      "Sector is Smart Cities, which significantly lowers risk."
+    ],
+    "shap_contributions": [
+      {
+        "feature": "expenditure_to_progress_ratio",
+        "value": -0.8049300713409538,
+        "impact": -2.461255250839197,
+        "explanation": "Expenditure (-0.80x) is in line with physical progress, which lowers risk."
+      },
+      {
+        "feature": "cost_growth_pct",
+        "value": -0.3436818477700941,
+        "impact": -0.8324441270467551,
+        "explanation": "Project is 0.3% under budget, which significantly lowers risk."
+      },
+      {
+        "feature": "n_updates_so_far",
+        "value": 1.8197565788358194,
+        "impact": -0.5639828845615312,
+        "explanation": "N Updates So Far is 1.82, which significantly lowers risk."
+      },
+      {
+        "feature": "count_of_revised_dates",
+        "value": 1.7391765242010815,
+        "impact": 0.46510733815739935,
+        "explanation": "The expected completion date has been revised 1 time(s), which significantly raises risk."
+      },
+      {
+        "feature": "sector",
+        "value": "Smart Cities",
+        "impact": -0.36338373217440467,
+        "explanation": "Sector is Smart Cities, which significantly lowers risk."
+      }
+    ],
+    "chart_path": "C:\\Users\\RAMESH PATARE\\OneDrive\\Desktop\\SIH\\SIH26103\\backend\\pragya_xai\\outputs\\PRJ-A95D12D7_label_overrun_20230603.png",
+    "model_version": "1.0.0",
+    "feature_set_version": "xai_v1.0"
+  },
+  {
+    "project_id": "PRJ-A95D12D7",
+    "as_of_date": "2023-06-03",
+    "target": "label_delay",
+    "risk_probability": 0.9885,
+    "risk_band": "High",
+    "top_reasons": [
+      "The expected completion date has been revised 1 time(s), which significantly raises risk.",
+      "Sector is Smart Cities, which significantly raises risk.",
+      "Agency is Agency_31, which significantly raises risk.",
+      "Ministry is Ministry of Power, which significantly raises risk.",
+      "Expenditure (-0.80x) is in line with physical progress, which lowers risk."
+    ],
+    "shap_contributions": [
+      {
+        "feature": "count_of_revised_dates",
+        "value": 1.7391765242010815,
+        "impact": 3.52345238344489,
+        "explanation": "The expected completion date has been revised 1 time(s), which significantly raises risk."
+      },
+      {
+        "feature": "sector",
+        "value": "Smart Cities",
+        "impact": 0.9717362595093253,
+        "explanation": "Sector is Smart Cities, which significantly raises risk."
+      },
+      {
+        "feature": "agency",
+        "value": "Agency_31",
+        "impact": 0.9248997491938076,
+        "explanation": "Agency is Agency_31, which significantly raises risk."
+      },
+      {
+        "feature": "ministry",
+        "value": "Ministry of Power",
+        "impact": 0.9026685111703224,
+        "explanation": "Ministry is Ministry of Power, which significantly raises risk."
+      },
+      {
+        "feature": "expenditure_to_progress_ratio",
+        "value": -0.8049300713409538,
+        "impact": -0.6288591858820268,
+        "explanation": "Expenditure (-0.80x) is in line with physical progress, which lowers risk."
+      }
+    ],
+    "chart_path": "C:\\Users\\RAMESH PATARE\\OneDrive\\Desktop\\SIH\\SIH26103\\backend\\pragya_xai\\outputs\\PRJ-A95D12D7_label_delay_20230603.png",
+    "model_version": "1.0.0",
+    "feature_set_version": "xai_v1.0"
+  },
+  {
+    "project_id": "PRJ-31403181",
+    "as_of_date": "2022-07-24",
+    "target": "label_overrun",
+    "risk_probability": 0.0074,
+    "risk_band": "Low",
+    "top_reasons": [
+      "Expenditure (-0.34x) is in line with physical progress, which lowers risk.",
+      "Project is 0.3% under budget, which significantly lowers risk.",
+      "N Updates So Far is 1.82, which significantly lowers risk.",
+      "A recent update was received 0 days ago, which raises risk.",
+      "Average gap between updates is 0 days, which raises risk."
+    ],
+    "shap_contributions": [
+      {
+        "feature": "expenditure_to_progress_ratio",
+        "value": -0.33662141579679017,
+        "impact": -1.2291837236218628,
+        "explanation": "Expenditure (-0.34x) is in line with physical progress, which lowers risk."
+      },
+      {
+        "feature": "cost_growth_pct",
+        "value": -0.3436818477700941,
+        "impact": -0.830721134788163,
+        "explanation": "Project is 0.3% under budget, which significantly lowers risk."
+      },
+      {
+        "feature": "n_updates_so_far",
+        "value": 1.8197565788358194,
+        "impact": -0.5691180169479886,
+        "explanation": "N Updates So Far is 1.82, which significantly lowers risk."
+      },
+      {
+        "feature": "days_since_last_update",
+        "value": -0.9107505183551433,
+        "impact": 0.3096470095817914,
+        "explanation": "A recent update was received 0 days ago, which raises risk."
+      },
+      {
+        "feature": "avg_update_gap",
+        "value": 0.32867620419953086,
+        "impact": 0.198838570608188,
+        "explanation": "Average gap between updates is 0 days, which raises risk."
+      }
+    ],
+    "chart_path": "C:\\Users\\RAMESH PATARE\\OneDrive\\Desktop\\SIH\\SIH26103\\backend\\pragya_xai\\outputs\\PRJ-31403181_label_overrun_20220724.png",
+    "model_version": "1.0.0",
+    "feature_set_version": "xai_v1.0"
+  },
+  {
+    "project_id": "PRJ-31403181",
+    "as_of_date": "2022-07-24",
+    "target": "label_delay",
+    "risk_probability": 0.0015,
+    "risk_band": "Low",
+    "top_reasons": [
+      "No completion-date revisions recorded, which lowers risk.",
+      "N Updates So Far is 1.82, which significantly lowers risk.",
+      "Ministry is Ministry of Road Transport & Highways, which significantly lowers risk.",
+      "Agency is Agency_15, which significantly lowers risk.",
+      "Sector is Ports, which significantly lowers risk."
+    ],
+    "shap_contributions": [
+      {
+        "feature": "count_of_revised_dates",
+        "value": -0.5749847620898435,
+        "impact": -1.6182170540249894,
+        "explanation": "No completion-date revisions recorded, which lowers risk."
+      },
+      {
+        "feature": "n_updates_so_far",
+        "value": 1.8197565788358194,
+        "impact": -0.8382213621204808,
+        "explanation": "N Updates So Far is 1.82, which significantly lowers risk."
+      },
+      {
+        "feature": "ministry",
+        "value": "Ministry of Road Transport & Highways",
+        "impact": -0.7769357428047136,
+        "explanation": "Ministry is Ministry of Road Transport & Highways, which significantly lowers risk."
+      },
+      {
+        "feature": "agency",
+        "value": "Agency_15",
+        "impact": -0.7104571622321453,
+        "explanation": "Agency is Agency_15, which significantly lowers risk."
+      },
+      {
+        "feature": "sector",
+        "value": "Ports",
+        "impact": -0.6650898147596501,
+        "explanation": "Sector is Ports, which significantly lowers risk."
+      }
+    ],
+    "chart_path": "C:\\Users\\RAMESH PATARE\\OneDrive\\Desktop\\SIH\\SIH26103\\backend\\pragya_xai\\outputs\\PRJ-31403181_label_delay_20220724.png",
+    "model_version": "1.0.0",
+    "feature_set_version": "xai_v1.0"
+  }
+]

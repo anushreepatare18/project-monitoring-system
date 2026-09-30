@@ -1,0 +1,30 @@
+{
+  "LogisticRegression": {
+    "pr_auc": 0.9867,
+    "recall": 0.9474,
+    "precision": 0.9704,
+    "f1": 0.9588,
+    "brier": 0.017
+  },
+  "RandomForest": {
+    "pr_auc": 0.9914,
+    "recall": 0.9762,
+    "precision": 0.9729,
+    "f1": 0.9746,
+    "brier": 0.0134
+  },
+  "XGBoost": {
+    "pr_auc": 0.9968,
+    "recall": 0.9813,
+    "precision": 0.978,
+    "f1": 0.9797,
+    "brier": 0.0095
+  },
+  "CatBoost": {
+    "pr_auc": 0.9982,
+    "recall": 0.983,
+    "precision": 0.9698,
+    "f1": 0.9764,
+    "brier": 0.0093
+  }
+}

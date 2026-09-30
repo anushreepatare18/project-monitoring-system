@@ -1,0 +1,20 @@
+{
+  "target": "label_delay",
+  "champion_algorithm": "CatBoost",
+  "version": "1.0.0",
+  "trained_at": "2026-09-30T07:50:24.750824Z",
+  "feature_set_version": "xai_v1.0",
+  "test_metrics": {
+    "pr_auc": 0.9878,
+    "recall": 0.9427,
+    "precision": 0.9313,
+    "f1": 0.937,
+    "brier": 0.039
+  },
+  "intended_use": "Early-warning risk detection; advisory only \u2014 human officer must verify.",
+  "limitations": [
+    "Trained on synthetic data; retrain with real MOSPI data before production use.",
+    "CatBoost may underperform for sectors with < 30 training examples."
+  ],
+  "human_in_loop": true
+}
