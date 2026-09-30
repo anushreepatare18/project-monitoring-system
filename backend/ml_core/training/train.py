@@ -454,7 +454,7 @@ def main():
     # ── 5. Save shared artifacts ──────────────────────────────────────────────
     save_shared_artifacts(prep, selections)
 
-    print("\n✓ Training complete!")
+    print("\n[DONE] Training complete!")
     for t, s in selections.items():
         print(f"  {t}: {s}")
 
