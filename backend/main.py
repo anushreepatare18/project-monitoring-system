@@ -154,6 +154,13 @@ def update_project(project_id: str, data: ProjectUpdate, db: Session = Depends(g
     if not val_result["is_valid"]:
         raise HTTPException(status_code=400, detail={"errors": val_result["hard_errors"]})
 
+    from backend.anomaly import detect_anomalies
+    from backend.app_db import AnomalyResult
+    
+    anomaly_check = detect_anomalies(data_dict, prev_state)
+    is_anomalous = anomaly_check["is_flagged"]
+    
+    # We still get risk_score from model
     data_dict['projectId'] = project.id
     data_dict['ministry'] = project.ministry
     data_dict['sector'] = project.sector
@@ -168,17 +175,13 @@ def update_project(project_id: str, data: ProjectUpdate, db: Session = Depends(g
     project.cost_overrun_pct = data.Cost_Overrun_Pct
     project.risk_score = risk_res['risk_score']
     project.risk_level = risk_res['risk_level']
-    project.is_anomalous = risk_res['is_anomalous']
+    project.is_anomalous = is_anomalous
+
     
-    # Generate Alert if necessary
-    if risk_res['alert_triggered']:
-        alert = Alert(
-            project_id=project.id,
-            risk_score=risk_res['risk_score'],
-            message=f"High risk detected. Anomalous: {risk_res['is_anomalous']}",
-            status="Open"
-        )
-        db.add(alert)
+    # Generate Alert if necessary using the new Alert Engine
+    from backend.alert_engine import evaluate_alert_rules
+    new_alert = evaluate_alert_rules(project, risk_res, is_anomalous, db)
+    if new_alert:
         send_notification(project.id, risk_res['risk_level'])
     
     # Audit log
@@ -218,6 +221,16 @@ def update_project(project_id: str, data: ProjectUpdate, db: Session = Depends(g
             message=warning["message"]
         )
         db.add(v_res)
+        
+    # Save Anomaly Results
+    import json
+    anom_res = AnomalyResult(
+        update_id=history.id,
+        anomaly_score=anomaly_check["anomaly_score"],
+        flagged=anomaly_check["is_flagged"],
+        reasons_json=json.dumps(anomaly_check["reasons"])
+    )
+    db.add(anom_res)
     
     db.commit()
     
