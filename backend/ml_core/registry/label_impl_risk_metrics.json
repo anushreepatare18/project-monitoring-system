@@ -1,30 +1,682 @@
 {
-    "LogisticRegression": {
-        "PR-AUC": 0.7364778228846832,
-        "Recall": 0.5872576177285319,
-        "Precision": 0.7709090909090909,
-        "F1": 0.6666666666666666,
-        "Brier": 0.07906783443787631
-    },
-    "RandomForest": {
-        "PR-AUC": 0.8943681463861076,
-        "Recall": 0.778393351800554,
-        "Precision": 0.8949044585987261,
-        "F1": 0.8325925925925926,
-        "Brier": 0.04406208270322561
-    },
-    "XGBoost": {
-        "PR-AUC": 0.905027858517411,
-        "Recall": 0.814404432132964,
-        "Precision": 0.9102167182662538,
-        "F1": 0.8596491228070176,
-        "Brier": 0.039821103530387404
-    },
-    "CatBoost": {
-        "PR-AUC": 0.9086285726961536,
-        "Recall": 0.9085872576177285,
-        "Precision": 0.6949152542372882,
-        "F1": 0.787515006002401,
-        "Brier": 0.07214601156571178
+  "LogisticRegression": {
+    "pr_auc": 0.7869,
+    "recall": 0.7628,
+    "precision": 0.7874,
+    "f1": 0.7749,
+    "brier": 0.1237,
+    "sliced": {
+      "sector_Airport": {
+        "pr_auc": 0.7654,
+        "recall": 0.7353,
+        "precision": 0.7576,
+        "f1": 0.7463,
+        "brier": 0.1161
+      },
+      "sector_Bridge": {
+        "pr_auc": 0.8469,
+        "recall": 0.7209,
+        "precision": 0.8857,
+        "f1": 0.7949,
+        "brier": 0.1389
+      },
+      "sector_Coal Mining": {
+        "pr_auc": 0.7634,
+        "recall": 0.6129,
+        "precision": 0.8636,
+        "f1": 0.717,
+        "brier": 0.1243
+      },
+      "sector_Dam": {
+        "pr_auc": 0.7885,
+        "recall": 0.697,
+        "precision": 0.7667,
+        "f1": 0.7302,
+        "brier": 0.1273
+      },
+      "sector_Fertilizers": {
+        "pr_auc": 0.8343,
+        "recall": 0.9091,
+        "precision": 0.8108,
+        "f1": 0.8571,
+        "brier": 0.0964
+      },
+      "sector_Highways": {
+        "pr_auc": 0.7684,
+        "recall": 0.8438,
+        "precision": 0.7941,
+        "f1": 0.8182,
+        "brier": 0.1092
+      },
+      "sector_Industrial Corridor": {
+        "pr_auc": 0.7071,
+        "recall": 0.6053,
+        "precision": 0.7419,
+        "f1": 0.6667,
+        "brier": 0.1707
+      },
+      "sector_Irrigation": {
+        "pr_auc": 0.8921,
+        "recall": 0.8667,
+        "precision": 0.8667,
+        "f1": 0.8667,
+        "brier": 0.0965
+      },
+      "sector_Oil & Gas Pipelines": {
+        "pr_auc": 0.7279,
+        "recall": 0.7308,
+        "precision": 0.7037,
+        "f1": 0.717,
+        "brier": 0.1317
+      },
+      "sector_Petrochemicals": {
+        "pr_auc": 0.7845,
+        "recall": 0.8485,
+        "precision": 0.7368,
+        "f1": 0.7887,
+        "brier": 0.1093
+      },
+      "sector_Ports": {
+        "pr_auc": 0.8347,
+        "recall": 0.7872,
+        "precision": 0.881,
+        "f1": 0.8315,
+        "brier": 0.1265
+      },
+      "sector_Power Generation": {
+        "pr_auc": 0.7064,
+        "recall": 0.6944,
+        "precision": 0.6757,
+        "f1": 0.6849,
+        "brier": 0.1333
+      },
+      "sector_Railways": {
+        "pr_auc": 0.7268,
+        "recall": 0.5517,
+        "precision": 0.8,
+        "f1": 0.6531,
+        "brier": 0.1366
+      },
+      "sector_Renewable Energy": {
+        "pr_auc": 0.7939,
+        "recall": 0.7381,
+        "precision": 0.7045,
+        "f1": 0.7209,
+        "brier": 0.1461
+      },
+      "sector_Smart Cities": {
+        "pr_auc": 0.7583,
+        "recall": 0.7,
+        "precision": 0.8077,
+        "f1": 0.75,
+        "brier": 0.1209
+      },
+      "sector_Steel": {
+        "pr_auc": 0.7595,
+        "recall": 0.7955,
+        "precision": 0.7609,
+        "f1": 0.7778,
+        "brier": 0.1714
+      },
+      "sector_Telecom Infrastructure": {
+        "pr_auc": 0.7834,
+        "recall": 0.8333,
+        "precision": 0.7895,
+        "f1": 0.8108,
+        "brier": 0.1073
+      },
+      "sector_Transmission": {
+        "pr_auc": 0.9604,
+        "recall": 0.9459,
+        "precision": 0.8537,
+        "f1": 0.8974,
+        "brier": 0.0749
+      },
+      "sector_Urban Metro": {
+        "pr_auc": 0.7904,
+        "recall": 0.8,
+        "precision": 0.7568,
+        "f1": 0.7778,
+        "brier": 0.1238
+      },
+      "sector_Water Supply": {
+        "pr_auc": 0.8391,
+        "recall": 0.8,
+        "precision": 0.8235,
+        "f1": 0.8116,
+        "brier": 0.1061
+      },
+      "size_Small": {
+        "pr_auc": 0.8833,
+        "recall": 0.8248,
+        "precision": 0.8561,
+        "f1": 0.8401,
+        "brier": 0.107
+      },
+      "size_Medium": {
+        "pr_auc": 0.7814,
+        "recall": 0.7637,
+        "precision": 0.8044,
+        "f1": 0.7835,
+        "brier": 0.1245
+      },
+      "size_Large": {
+        "pr_auc": 0.6412,
+        "recall": 0.6736,
+        "precision": 0.6736,
+        "f1": 0.6736,
+        "brier": 0.1395
+      }
     }
+  },
+  "RandomForest": {
+    "pr_auc": 0.9377,
+    "recall": 0.7713,
+    "precision": 0.9493,
+    "f1": 0.8511,
+    "brier": 0.07,
+    "sliced": {
+      "sector_Airport": {
+        "pr_auc": 0.9268,
+        "recall": 0.7647,
+        "precision": 0.9286,
+        "f1": 0.8387,
+        "brier": 0.0691
+      },
+      "sector_Bridge": {
+        "pr_auc": 0.9537,
+        "recall": 0.7907,
+        "precision": 0.9714,
+        "f1": 0.8718,
+        "brier": 0.0774
+      },
+      "sector_Coal Mining": {
+        "pr_auc": 0.9117,
+        "recall": 0.7419,
+        "precision": 0.9583,
+        "f1": 0.8364,
+        "brier": 0.0753
+      },
+      "sector_Dam": {
+        "pr_auc": 0.9462,
+        "recall": 0.697,
+        "precision": 1.0,
+        "f1": 0.8214,
+        "brier": 0.068
+      },
+      "sector_Fertilizers": {
+        "pr_auc": 0.9642,
+        "recall": 0.8788,
+        "precision": 0.9667,
+        "f1": 0.9206,
+        "brier": 0.0521
+      },
+      "sector_Highways": {
+        "pr_auc": 0.9647,
+        "recall": 0.875,
+        "precision": 0.9032,
+        "f1": 0.8889,
+        "brier": 0.0508
+      },
+      "sector_Industrial Corridor": {
+        "pr_auc": 0.9437,
+        "recall": 0.7368,
+        "precision": 0.9333,
+        "f1": 0.8235,
+        "brier": 0.0767
+      },
+      "sector_Irrigation": {
+        "pr_auc": 0.9891,
+        "recall": 0.9333,
+        "precision": 0.9655,
+        "f1": 0.9492,
+        "brier": 0.0343
+      },
+      "sector_Oil & Gas Pipelines": {
+        "pr_auc": 0.8853,
+        "recall": 0.7692,
+        "precision": 0.8333,
+        "f1": 0.8,
+        "brier": 0.0828
+      },
+      "sector_Petrochemicals": {
+        "pr_auc": 0.9455,
+        "recall": 0.8182,
+        "precision": 1.0,
+        "f1": 0.9,
+        "brier": 0.0564
+      },
+      "sector_Ports": {
+        "pr_auc": 0.9306,
+        "recall": 0.7021,
+        "precision": 0.9429,
+        "f1": 0.8049,
+        "brier": 0.0962
+      },
+      "sector_Power Generation": {
+        "pr_auc": 0.9134,
+        "recall": 0.8056,
+        "precision": 0.9355,
+        "f1": 0.8657,
+        "brier": 0.072
+      },
+      "sector_Railways": {
+        "pr_auc": 0.9063,
+        "recall": 0.6552,
+        "precision": 0.95,
+        "f1": 0.7755,
+        "brier": 0.0796
+      },
+      "sector_Renewable Energy": {
+        "pr_auc": 0.9341,
+        "recall": 0.7381,
+        "precision": 0.9688,
+        "f1": 0.8378,
+        "brier": 0.0778
+      },
+      "sector_Smart Cities": {
+        "pr_auc": 0.8679,
+        "recall": 0.6333,
+        "precision": 0.95,
+        "f1": 0.76,
+        "brier": 0.0857
+      },
+      "sector_Steel": {
+        "pr_auc": 0.9367,
+        "recall": 0.6591,
+        "precision": 0.9062,
+        "f1": 0.7632,
+        "brier": 0.1118
+      },
+      "sector_Telecom Infrastructure": {
+        "pr_auc": 0.9494,
+        "recall": 0.8333,
+        "precision": 0.9677,
+        "f1": 0.8955,
+        "brier": 0.0563
+      },
+      "sector_Transmission": {
+        "pr_auc": 0.9833,
+        "recall": 0.9459,
+        "precision": 0.9722,
+        "f1": 0.9589,
+        "brier": 0.0371
+      },
+      "sector_Urban Metro": {
+        "pr_auc": 0.9499,
+        "recall": 0.7143,
+        "precision": 0.9615,
+        "f1": 0.8197,
+        "brier": 0.0689
+      },
+      "sector_Water Supply": {
+        "pr_auc": 0.9439,
+        "recall": 0.7714,
+        "precision": 0.9643,
+        "f1": 0.8571,
+        "brier": 0.0627
+      },
+      "size_Small": {
+        "pr_auc": 0.9866,
+        "recall": 0.9124,
+        "precision": 0.996,
+        "f1": 0.9524,
+        "brier": 0.0317
+      },
+      "size_Medium": {
+        "pr_auc": 0.943,
+        "recall": 0.7806,
+        "precision": 0.9686,
+        "f1": 0.8645,
+        "brier": 0.0663
+      },
+      "size_Large": {
+        "pr_auc": 0.799,
+        "recall": 0.5596,
+        "precision": 0.8308,
+        "f1": 0.6687,
+        "brier": 0.112
+      }
+    }
+  },
+  "XGBoost": {
+    "pr_auc": 0.942,
+    "recall": 0.7869,
+    "precision": 0.9519,
+    "f1": 0.8616,
+    "brier": 0.0701,
+    "sliced": {
+      "sector_Airport": {
+        "pr_auc": 0.9382,
+        "recall": 0.7941,
+        "precision": 0.931,
+        "f1": 0.8571,
+        "brier": 0.0646
+      },
+      "sector_Bridge": {
+        "pr_auc": 0.9617,
+        "recall": 0.7907,
+        "precision": 0.9714,
+        "f1": 0.8718,
+        "brier": 0.0745
+      },
+      "sector_Coal Mining": {
+        "pr_auc": 0.8988,
+        "recall": 0.7742,
+        "precision": 0.96,
+        "f1": 0.8571,
+        "brier": 0.0809
+      },
+      "sector_Dam": {
+        "pr_auc": 0.9642,
+        "recall": 0.7879,
+        "precision": 0.963,
+        "f1": 0.8667,
+        "brier": 0.062
+      },
+      "sector_Fertilizers": {
+        "pr_auc": 0.9605,
+        "recall": 0.8788,
+        "precision": 0.9355,
+        "f1": 0.9062,
+        "brier": 0.0575
+      },
+      "sector_Highways": {
+        "pr_auc": 0.946,
+        "recall": 0.8438,
+        "precision": 0.931,
+        "f1": 0.8852,
+        "brier": 0.0586
+      },
+      "sector_Industrial Corridor": {
+        "pr_auc": 0.9521,
+        "recall": 0.7895,
+        "precision": 0.9677,
+        "f1": 0.8696,
+        "brier": 0.0685
+      },
+      "sector_Irrigation": {
+        "pr_auc": 0.986,
+        "recall": 0.9333,
+        "precision": 0.9655,
+        "f1": 0.9492,
+        "brier": 0.0337
+      },
+      "sector_Oil & Gas Pipelines": {
+        "pr_auc": 0.9268,
+        "recall": 0.8077,
+        "precision": 0.875,
+        "f1": 0.84,
+        "brier": 0.0705
+      },
+      "sector_Petrochemicals": {
+        "pr_auc": 0.9394,
+        "recall": 0.8485,
+        "precision": 0.9655,
+        "f1": 0.9032,
+        "brier": 0.067
+      },
+      "sector_Ports": {
+        "pr_auc": 0.9327,
+        "recall": 0.7234,
+        "precision": 0.9189,
+        "f1": 0.8095,
+        "brier": 0.0956
+      },
+      "sector_Power Generation": {
+        "pr_auc": 0.9248,
+        "recall": 0.8056,
+        "precision": 0.9355,
+        "f1": 0.8657,
+        "brier": 0.0706
+      },
+      "sector_Railways": {
+        "pr_auc": 0.8973,
+        "recall": 0.6207,
+        "precision": 0.9,
+        "f1": 0.7347,
+        "brier": 0.0822
+      },
+      "sector_Renewable Energy": {
+        "pr_auc": 0.9353,
+        "recall": 0.7381,
+        "precision": 0.9394,
+        "f1": 0.8267,
+        "brier": 0.0833
+      },
+      "sector_Smart Cities": {
+        "pr_auc": 0.9022,
+        "recall": 0.7,
+        "precision": 0.9545,
+        "f1": 0.8077,
+        "brier": 0.08
+      },
+      "sector_Steel": {
+        "pr_auc": 0.9471,
+        "recall": 0.7273,
+        "precision": 0.9697,
+        "f1": 0.8312,
+        "brier": 0.1066
+      },
+      "sector_Telecom Infrastructure": {
+        "pr_auc": 0.9512,
+        "recall": 0.7778,
+        "precision": 1.0,
+        "f1": 0.875,
+        "brier": 0.0583
+      },
+      "sector_Transmission": {
+        "pr_auc": 0.9809,
+        "recall": 0.9189,
+        "precision": 1.0,
+        "f1": 0.9577,
+        "brier": 0.0383
+      },
+      "sector_Urban Metro": {
+        "pr_auc": 0.9396,
+        "recall": 0.7143,
+        "precision": 0.9259,
+        "f1": 0.8065,
+        "brier": 0.0835
+      },
+      "sector_Water Supply": {
+        "pr_auc": 0.9517,
+        "recall": 0.8,
+        "precision": 1.0,
+        "f1": 0.8889,
+        "brier": 0.0556
+      },
+      "size_Small": {
+        "pr_auc": 0.9878,
+        "recall": 0.9234,
+        "precision": 0.9922,
+        "f1": 0.9565,
+        "brier": 0.0276
+      },
+      "size_Medium": {
+        "pr_auc": 0.9478,
+        "recall": 0.8059,
+        "precision": 0.9646,
+        "f1": 0.8782,
+        "brier": 0.0667
+      },
+      "size_Large": {
+        "pr_auc": 0.7906,
+        "recall": 0.5699,
+        "precision": 0.8527,
+        "f1": 0.6832,
+        "brier": 0.116
+      }
+    }
+  },
+  "CatBoost": {
+    "pr_auc": 0.9506,
+    "recall": 0.8665,
+    "precision": 0.8333,
+    "f1": 0.8496,
+    "brier": 0.0745,
+    "sliced": {
+      "sector_Airport": {
+        "pr_auc": 0.9548,
+        "recall": 0.8824,
+        "precision": 0.8108,
+        "f1": 0.8451,
+        "brier": 0.0724
+      },
+      "sector_Bridge": {
+        "pr_auc": 0.9586,
+        "recall": 0.814,
+        "precision": 0.8974,
+        "f1": 0.8537,
+        "brier": 0.0767
+      },
+      "sector_Coal Mining": {
+        "pr_auc": 0.9297,
+        "recall": 0.8387,
+        "precision": 0.7222,
+        "f1": 0.7761,
+        "brier": 0.0866
+      },
+      "sector_Dam": {
+        "pr_auc": 0.9698,
+        "recall": 0.9091,
+        "precision": 0.8824,
+        "f1": 0.8955,
+        "brier": 0.0625
+      },
+      "sector_Fertilizers": {
+        "pr_auc": 0.9619,
+        "recall": 0.9394,
+        "precision": 0.8158,
+        "f1": 0.8732,
+        "brier": 0.0697
+      },
+      "sector_Highways": {
+        "pr_auc": 0.9558,
+        "recall": 0.9375,
+        "precision": 0.7692,
+        "f1": 0.8451,
+        "brier": 0.0792
+      },
+      "sector_Industrial Corridor": {
+        "pr_auc": 0.9402,
+        "recall": 0.8158,
+        "precision": 0.8378,
+        "f1": 0.8267,
+        "brier": 0.0831
+      },
+      "sector_Irrigation": {
+        "pr_auc": 0.9909,
+        "recall": 0.9667,
+        "precision": 0.8788,
+        "f1": 0.9206,
+        "brier": 0.0468
+      },
+      "sector_Oil & Gas Pipelines": {
+        "pr_auc": 0.9361,
+        "recall": 0.8846,
+        "precision": 0.7188,
+        "f1": 0.7931,
+        "brier": 0.0856
+      },
+      "sector_Petrochemicals": {
+        "pr_auc": 0.957,
+        "recall": 0.8788,
+        "precision": 0.8286,
+        "f1": 0.8529,
+        "brier": 0.0654
+      },
+      "sector_Ports": {
+        "pr_auc": 0.9476,
+        "recall": 0.766,
+        "precision": 0.8571,
+        "f1": 0.809,
+        "brier": 0.0858
+      },
+      "sector_Power Generation": {
+        "pr_auc": 0.9334,
+        "recall": 0.8611,
+        "precision": 0.8158,
+        "f1": 0.8378,
+        "brier": 0.0791
+      },
+      "sector_Railways": {
+        "pr_auc": 0.9228,
+        "recall": 0.8276,
+        "precision": 0.8276,
+        "f1": 0.8276,
+        "brier": 0.0804
+      },
+      "sector_Renewable Energy": {
+        "pr_auc": 0.9489,
+        "recall": 0.8095,
+        "precision": 0.8947,
+        "f1": 0.85,
+        "brier": 0.0768
+      },
+      "sector_Smart Cities": {
+        "pr_auc": 0.9183,
+        "recall": 0.8,
+        "precision": 0.8,
+        "f1": 0.8,
+        "brier": 0.0788
+      },
+      "sector_Steel": {
+        "pr_auc": 0.9445,
+        "recall": 0.8182,
+        "precision": 0.8571,
+        "f1": 0.8372,
+        "brier": 0.097
+      },
+      "sector_Telecom Infrastructure": {
+        "pr_auc": 0.9747,
+        "recall": 0.9167,
+        "precision": 0.825,
+        "f1": 0.8684,
+        "brier": 0.0619
+      },
+      "sector_Transmission": {
+        "pr_auc": 0.9866,
+        "recall": 0.9459,
+        "precision": 0.875,
+        "f1": 0.9091,
+        "brier": 0.0541
+      },
+      "sector_Urban Metro": {
+        "pr_auc": 0.9566,
+        "recall": 0.9143,
+        "precision": 0.8889,
+        "f1": 0.9014,
+        "brier": 0.0747
+      },
+      "sector_Water Supply": {
+        "pr_auc": 0.965,
+        "recall": 0.8857,
+        "precision": 0.8378,
+        "f1": 0.8611,
+        "brier": 0.0669
+      },
+      "size_Small": {
+        "pr_auc": 0.9916,
+        "recall": 0.9343,
+        "precision": 0.9771,
+        "f1": 0.9552,
+        "brier": 0.0298
+      },
+      "size_Medium": {
+        "pr_auc": 0.9544,
+        "recall": 0.8481,
+        "precision": 0.8481,
+        "f1": 0.8481,
+        "brier": 0.0716
+      },
+      "size_Large": {
+        "pr_auc": 0.8236,
+        "recall": 0.7927,
+        "precision": 0.6567,
+        "f1": 0.7183,
+        "brier": 0.1221
+      }
+    }
+  }
 }

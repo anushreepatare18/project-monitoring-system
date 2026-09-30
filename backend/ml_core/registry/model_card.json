@@ -1,0 +1,24 @@
+{
+  "model_name": "PRAGYA AI Risk Prediction Core",
+  "version": "2.0.0",
+  "trained_at": "2026-09-30T07:37:42.187775",
+  "selections": {
+    "label_overrun": "CatBoost",
+    "label_delay": "CatBoost",
+    "label_impl_risk": "CatBoost"
+  },
+  "intended_use": "Early-warning risk detection for Central Sector infrastructure projects. Predictions indicate probability of cost overrun, time delay, and implementation risk.",
+  "human_in_loop": true,
+  "limitations": [
+    "Labels derived from synthetic outcomes; real-world data may shift distributions.",
+    "CatBoost may underperform on sectors with <30 training examples.",
+    "Model does not account for external macro-economic shocks."
+  ],
+  "known_weak_sectors": [
+    "Smart Cities",
+    "Telecom Infrastructure"
+  ],
+  "minimum_recall_floor": 0.5,
+  "feature_set_version": "v2.0",
+  "random_seed": 42
+}
