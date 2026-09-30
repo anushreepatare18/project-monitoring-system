@@ -84,9 +84,11 @@ class ProjectSchema(BaseModel):
         orm_mode = True
 
 class AlertReview(BaseModel):
-    status: str # Verified, Dismissed
+    status: str # Confirmed, False alarm, Needs info, Escalate
     officer_notes: Optional[str] = None
-    user_role: str = "Officer"
+    recommended_action: Optional[str] = None
+    user_role: str = "Monitoring Officer"
+    feedback_tags: Optional[str] = None
 
 from backend.ml_core.inference.infer import run_inference
 
@@ -407,6 +409,8 @@ def get_alerts(db: Session = Depends(get_db)):
 
 @app.post("/api/alerts/{alert_id}/review")
 def review_alert(alert_id: int, review: AlertReview, db: Session = Depends(get_db)):
+    from backend.app_db import Decision
+    
     alert = db.query(Alert).filter(Alert.id == alert_id).first()
     if not alert:
         raise HTTPException(status_code=404, detail="Alert not found")
@@ -414,11 +418,24 @@ def review_alert(alert_id: int, review: AlertReview, db: Session = Depends(get_d
     alert.status = review.status
     alert.officer_notes = review.officer_notes
     
+    decision = Decision(
+        alert_id=alert.id,
+        officer_id="current_user_mock",
+        classification=review.status,
+        remarks=review.officer_notes or "",
+        recommended_action=review.recommended_action,
+        feedback_tags=review.feedback_tags
+    )
+    db.add(decision)
+    
     # Audit log
     audit = AuditLog(
-        action="Alert Review",
+        action="Alert Decision Logged",
+        actor="current_user_mock",
         user_role=review.user_role,
-        details=f"Reviewed alert {alert.id}. Status: {review.status}"
+        object_type="Alert",
+        object_id=str(alert.id),
+        details=f"Reviewed alert {alert.id}. Classification: {review.status}"
     )
     db.add(audit)
     db.commit()
