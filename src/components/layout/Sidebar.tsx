@@ -4,93 +4,94 @@ import { usePathname } from "next/navigation";
 import { 
   LayoutDashboard, 
   AlertTriangle, 
-  Briefcase, 
-  Settings, 
+  Activity, 
+  BarChart2, 
+  Bot,
+  Search,
+  Settings,
   LogOut,
-  TrendingUp,
-  FileText
+  Target,
+  FileText,
+  SearchCode
 } from "lucide-react";
-import clsx from "clsx";
 
 export default function Sidebar() {
   const pathname = usePathname();
-
-  // Basic mock role extraction from pathname for the prototype
-  const role = pathname.split('/')[2] || "officer";
-
-  const navigation = [
-    { name: "Overview", href: `/dashboard/${role}`, icon: LayoutDashboard },
-    { name: "Alerts Queue", href: `/dashboard/${role}/alerts`, icon: AlertTriangle },
-    { name: "Projects", href: `/dashboard/${role}/projects`, icon: Briefcase },
-    { name: "Reports", href: `/dashboard/${role}/reports`, icon: FileText },
+  
+  const menuItems = [
+    { name: "Overview", icon: LayoutDashboard, path: "/dashboard/officer" },
+    { name: "Alert Queue", icon: AlertTriangle, path: "/dashboard/officer/alerts" },
+    { name: "Project Monitoring", icon: Target, path: "/dashboard/officer/monitoring" },
+    { name: "AI Risk Insights", icon: Activity, path: "/dashboard/officer/projects" },
+    { name: "Risk Assistant", icon: Bot, path: "/dashboard/officer/assistant" },
+    { name: "Anomaly Review", icon: SearchCode, path: "/dashboard/officer/anomalies" },
+    { name: "Project Benchmarking", icon: BarChart2, path: "/dashboard/officer/benchmarking" },
+    { name: "Reports", icon: FileText, path: "/dashboard/officer/reports" },
   ];
 
   return (
-    <div className="flex h-full w-64 flex-col bg-slate-900 border-r border-slate-800">
-      <div className="flex h-16 shrink-0 items-center px-6 border-b border-slate-800">
-        <TrendingUp className="text-blue-500 w-6 h-6 mr-2" />
-        <span className="text-xl font-bold text-white tracking-tight">PRAGYA AI</span>
-      </div>
+    <div className="w-64 bg-[#0B132B] text-slate-300 flex flex-col h-screen fixed left-0 top-0 border-r border-slate-800 z-50">
       
-      <div className="flex flex-1 flex-col overflow-y-auto pt-6 px-4">
-        <div className="mb-6 px-2">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-            {role.toUpperCase()} MENU
-          </p>
-        </div>
-        
-        <nav className="flex-1 space-y-1">
-          {navigation.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={clsx(
-                  "group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all",
-                  isActive
-                    ? "bg-blue-600 text-white shadow-md shadow-blue-900/20"
-                    : "text-slate-300 hover:bg-slate-800 hover:text-white"
-                )}
-              >
-                <item.icon
-                  className={clsx(
-                    "mr-3 h-5 w-5 flex-shrink-0 transition-colors",
-                    isActive ? "text-white" : "text-slate-400 group-hover:text-white"
-                  )}
-                  aria-hidden="true"
-                />
-                {item.name}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
-      
-      <div className="flex shrink-0 border-t border-slate-800 p-4">
-        <Link
-          href="/login"
-          className="group block w-full flex-shrink-0 rounded-lg p-2 transition-all hover:bg-slate-800"
-        >
-          <div className="flex items-center">
-            <div>
-              <div className="inline-block h-9 w-9 rounded-full bg-slate-700 flex items-center justify-center">
-                <span className="text-sm font-medium text-white">
-                  {role.charAt(0).toUpperCase()}
-                </span>
-              </div>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-white group-hover:text-white">
-                {role.charAt(0).toUpperCase() + role.slice(1)} User
-              </p>
-              <p className="text-xs font-medium text-slate-400 flex items-center mt-0.5">
-                <LogOut className="w-3 h-3 mr-1" />
-                Sign out
-              </p>
-            </div>
+      {/* Logo */}
+      <div className="h-16 flex items-center px-6 border-b border-slate-800/50">
+        <div className="flex items-center gap-3">
+          <div className="w-7 h-7 bg-emerald-500 rounded flex items-center justify-center text-white font-black text-xs">
+            SG
           </div>
-        </Link>
+          <span className="font-bold text-white text-lg tracking-tight">Smart Gov <span className="text-emerald-400 font-normal">System</span></span>
+        </div>
+      </div>
+
+      {/* Role Label */}
+      <div className="px-6 py-5">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+          <span className="text-[10px] font-black text-emerald-500 tracking-widest uppercase">Monitoring Officer</span>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
+        {menuItems.map((item) => {
+          const isActive = pathname === item.path || pathname.startsWith(item.path + '/');
+          const Icon = item.icon;
+          return (
+            <Link 
+              key={item.name} 
+              href={item.path}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium ${
+                isActive 
+                  ? "bg-emerald-900/30 text-emerald-400 font-semibold" 
+                  : "hover:bg-slate-800/50 hover:text-white"
+              }`}
+            >
+              <Icon className={`w-4 h-4 ${isActive ? "text-emerald-400" : "text-slate-400"}`} />
+              {item.name}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Bottom Actions */}
+      <div className="p-4 space-y-1 border-t border-slate-800/50">
+        <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium w-full hover:bg-slate-800/50 hover:text-white">
+          <Bot className="w-4 h-4 text-slate-400" />
+          Smart Gov Assistant
+        </button>
+        <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium w-full hover:bg-slate-800/50 hover:text-white">
+          <Settings className="w-4 h-4 text-slate-400" />
+          Preferences
+        </button>
+      </div>
+      
+      <div className="p-4 pt-0">
+        <div className="bg-red-500/20 text-red-400 rounded-xl px-3 py-2 flex items-center justify-between text-xs font-bold border border-red-500/30 cursor-pointer hover:bg-red-500/30 transition-colors">
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center font-bold">N</div>
+            <span>2 Issues</span>
+          </div>
+          <span>×</span>
+        </div>
       </div>
     </div>
   );
