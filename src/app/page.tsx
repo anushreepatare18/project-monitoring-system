@@ -236,10 +236,107 @@ export default function LandingPage() {
       </main>
 
       {/* Scroll Down Indicator */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center animate-bounce opacity-70">
-        <span className="text-[10px] font-extrabold text-emerald-600 uppercase tracking-widest mb-1">Scroll to Explore</span>
+      <div className="hidden md:flex absolute bottom-8 left-1/2 -translate-x-1/2 flex-col items-center animate-bounce opacity-70">
+        <span className="text-[10px] font-extrabold text-emerald-600 uppercase tracking-widest mb-1">Explore Features</span>
         <ChevronDown className="w-4 h-4 text-emerald-600" />
       </div>
+
+      {/* Capabilities Section */}
+      <section id="capabilities" className="w-full bg-white py-24 border-t border-slate-100 relative">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-[10px] font-extrabold text-emerald-600 uppercase tracking-widest mb-2">Platform Capabilities</h2>
+            <h3 className="text-4xl font-extrabold text-slate-900 tracking-tight">AI-Powered Risk Mitigation</h3>
+            <p className="mt-4 text-slate-500 max-w-2xl mx-auto font-medium">
+              We leverage advanced machine learning to transform static project updates into dynamic, proactive risk intelligence for ministries and executing agencies.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Feature 1 */}
+            <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 hover:shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-2 transition-all duration-300 group">
+              <div className="bg-white w-14 h-14 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Activity className="text-emerald-500 w-7 h-7" />
+              </div>
+              <h4 className="text-xl font-bold text-slate-900 mb-3">Early Warning System</h4>
+              <p className="text-sm text-slate-600 leading-relaxed font-medium">
+                Detect anomalies in financial burn rates and physical progress using real-time data ingestion. Receive alerts weeks before a minor delay becomes a critical bottleneck.
+              </p>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-2 transition-all duration-300 group">
+              <div className="bg-white w-14 h-14 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <BarChart3 className="text-blue-500 w-7 h-7" />
+              </div>
+              <h4 className="text-xl font-bold text-slate-900 mb-3">Explainable AI (SHAP)</h4>
+              <p className="text-sm text-slate-600 leading-relaxed font-medium">
+                Don't just get a risk score—understand it. Our models break down exactly which factors (e.g., land acquisition, milestone delay) are driving the project's risk profile.
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 hover:shadow-xl hover:shadow-purple-500/10 hover:-translate-y-2 transition-all duration-300 group">
+              <div className="bg-white w-14 h-14 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <ShieldCheck className="text-purple-500 w-7 h-7" />
+              </div>
+              <h4 className="text-xl font-bold text-slate-900 mb-3">Multi-Tier Security</h4>
+              <p className="text-sm text-slate-600 leading-relaxed font-medium">
+                Role-based access control guarantees data integrity. Ministry officials, state administrators, and field officers see exactly what they need to manage their portfolios safely.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Workflows Section */}
+      <section id="workflows" className="w-full bg-slate-900 py-24 relative overflow-hidden">
+        {/* Abstract background shapes */}
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl pointer-events-none"></div>
+
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-[10px] font-extrabold text-emerald-400 uppercase tracking-widest mb-2">Automated Workflows</h2>
+            <h3 className="text-4xl font-extrabold text-white tracking-tight">How the Engine Works</h3>
+            <p className="mt-4 text-slate-400 max-w-2xl mx-auto font-medium">
+              A seamless, three-step pipeline transforming raw field data into actionable executive insights.
+            </p>
+          </div>
+
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative">
+            {/* Connecting Line (Desktop only) */}
+            <div className="hidden md:block absolute top-1/2 left-[10%] right-[10%] h-0.5 bg-slate-800 -translate-y-1/2 z-0"></div>
+
+            {/* Step 1 */}
+            <div className="relative z-10 flex flex-col items-center w-full md:w-1/3">
+              <div className="w-16 h-16 bg-slate-800 border-2 border-slate-700 rounded-2xl flex items-center justify-center mb-6 shadow-xl text-emerald-400 text-xl font-black">1</div>
+              <h4 className="text-lg font-bold text-white mb-2 text-center">Data Ingestion</h4>
+              <p className="text-sm text-slate-400 text-center leading-relaxed">
+                Field officers upload MPRs, financial utilization certificates, and drone imagery.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="relative z-10 flex flex-col items-center w-full md:w-1/3">
+              <div className="w-16 h-16 bg-emerald-500 border-2 border-emerald-400 rounded-2xl flex items-center justify-center mb-6 shadow-xl text-slate-900 text-xl font-black shadow-emerald-500/20">2</div>
+              <h4 className="text-lg font-bold text-white mb-2 text-center">AI Analysis</h4>
+              <p className="text-sm text-slate-400 text-center leading-relaxed">
+                Our Random Forest models evaluate risk features while NLP parses qualitative updates for sentiment flags.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="relative z-10 flex flex-col items-center w-full md:w-1/3">
+              <div className="w-16 h-16 bg-slate-800 border-2 border-slate-700 rounded-2xl flex items-center justify-center mb-6 shadow-xl text-blue-400 text-xl font-black">3</div>
+              <h4 className="text-lg font-bold text-white mb-2 text-center">Actionable Insights</h4>
+              <p className="text-sm text-slate-400 text-center leading-relaxed">
+                Ministries view a prioritized dashboard of high-risk projects and underlying SHAP delay factors.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
