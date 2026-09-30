@@ -139,8 +139,21 @@ def update_project(project_id: str, data: ProjectUpdate, db: Session = Depends(g
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    # Predict risk using ML model
     data_dict = data.dict() if hasattr(data, 'dict') else data.model_dump()
+
+    # FR-VAL: Run validation
+    from backend.validation import validate_project_update
+    from backend.app_db import ValidationResult
+    
+    prev_state = {
+        'original_cost_cr': project.original_cost_cr,
+        'physical_progress_pct': project.physical_progress_pct,
+    }
+    val_result = validate_project_update(data_dict, prev_state)
+    
+    if not val_result["is_valid"]:
+        raise HTTPException(status_code=400, detail={"errors": val_result["hard_errors"]})
+
     data_dict['projectId'] = project.id
     data_dict['ministry'] = project.ministry
     data_dict['sector'] = project.sector
@@ -193,6 +206,18 @@ def update_project(project_id: str, data: ProjectUpdate, db: Session = Depends(g
         is_anomalous=risk_res['is_anomalous']
     )
     db.add(history)
+    db.flush() # To get history.id
+    
+    # Save Validation Results (Soft Warnings)
+    for warning in val_result["soft_warnings"]:
+        v_res = ValidationResult(
+            update_id=history.id,
+            rule_id="SW-01",
+            severity="Soft warning",
+            field=warning["field"],
+            message=warning["message"]
+        )
+        db.add(v_res)
     
     db.commit()
     
