@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useTheme } from "next-themes";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { IndiaMap } from "india-map-react";
+import { useState, useEffect } from "react";
 import { 
   Building2, 
   BarChart3, 
@@ -15,11 +18,57 @@ import {
   ChevronDown,
   ArrowRight,
   AlertTriangle,
-  Activity
+  Activity,
+  Search,
+  Menu,
+  Plus,
+  Minus,
+  Layers,
+  Crosshair,
+  X,
+  MapPin
 } from "lucide-react";
 
 export default function LandingPage() {
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const [selectedState, setSelectedState] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [mapScale, setMapScale] = useState(1);
+  const [mapPan, setMapPan] = useState({ x: 0, y: 0 });
+  const [layerMode, setLayerMode] = useState<"default" | "choropleth">("choropleth");
+
+  const handleZoomIn = () => setMapScale(prev => Math.min(prev + 0.5, 4));
+  const handleZoomOut = () => setMapScale(prev => Math.max(prev - 0.5, 1));
+  const handleReset = () => {
+    setMapScale(1);
+    setMapPan({ x: 0, y: 0 });
+  };
+
+  const stateDataMock = {
+    "Maharashtra": { value: 124, color: "#ea4335" },
+    "Uttar Pradesh": { value: 89, color: "#4285f4" },
+    "Karnataka": { value: 211, color: "#34a853" },
+    "Delhi": { value: 45, color: "#fbbc04" },
+    "Gujarat": { value: 167, color: "#34a853" },
+    "Tamil Nadu": { value: 92, color: "#ea4335" },
+  };
+
+  useEffect(() => {
+    if (searchQuery.length > 2) {
+      const match = Object.keys(stateDataMock).find(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
+      if (match) setSelectedState(match);
+    } else if (searchQuery.length === 0) {
+      setSelectedState(null);
+    }
+  }, [searchQuery]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDark = mounted && resolvedTheme === "dark";
 
   const handleDemoLogin = (role: string) => {
     router.push(`/dashboard/${role.toLowerCase()}`);
@@ -374,41 +423,153 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Stylized Network / Map Graphic */}
-            <div className="lg:w-1/2 w-full h-[400px] relative">
-              <div className="absolute inset-0 bg-white dark:bg-slate-950 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden flex items-center justify-center">
-                {/* Background Grid */}
-                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9IiNlMmU4ZjAiLz48L3N2Zz4=')] opacity-50"></div>
-                
-                {/* Nodes */}
-                <div className="relative w-full h-full max-w-[400px] max-h-[300px]">
-                  {/* Node 1 */}
-                  <div className="absolute top-[20%] left-[20%] w-3 h-3 bg-emerald-500 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.8)] animate-pulse">
-                    <div className="absolute -top-6 -left-6 bg-white dark:bg-slate-800 text-[9px] font-bold text-slate-600 dark:text-slate-300 px-2 py-1 rounded shadow border border-slate-100 dark:border-slate-700">North Region</div>
-                  </div>
-                  {/* Node 2 */}
-                  <div className="absolute top-[40%] right-[30%] w-4 h-4 bg-red-500 rounded-full shadow-[0_0_15px_rgba(239,68,68,0.8)]">
-                    <div className="absolute top-6 -left-10 bg-white dark:bg-slate-800 text-[9px] font-bold text-slate-600 dark:text-slate-300 px-2 py-1 rounded shadow border border-slate-100 dark:border-slate-700 z-10 flex items-center space-x-1">
-                      <AlertTriangle className="w-3 h-3 text-red-500" />
-                      <span>Highway Delay</span>
-                    </div>
-                  </div>
-                  {/* Node 3 */}
-                  <div className="absolute bottom-[25%] left-[40%] w-3 h-3 bg-emerald-500 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.8)] animate-pulse"></div>
-                  {/* Node 4 */}
-                  <div className="absolute bottom-[40%] right-[15%] w-2 h-2 bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.8)]"></div>
-                  {/* Node 5 */}
-                  <div className="absolute top-[60%] left-[15%] w-3 h-3 bg-emerald-500 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.8)] animate-pulse"></div>
-
-                  {/* Connecting lines */}
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
-                    <path d="M80 60 L160 220" stroke="#e2e8f0" strokeWidth="2" strokeDasharray="4 4" />
-                    <path d="M280 120 L160 220" stroke="#e2e8f0" strokeWidth="2" strokeDasharray="4 4" />
-                    <path d="M280 120 L340 180" stroke="#e2e8f0" strokeWidth="2" strokeDasharray="4 4" />
-                    <path d="M80 60 L60 180" stroke="#e2e8f0" strokeWidth="2" strokeDasharray="4 4" />
-                  </svg>
+            {/* Interactive India Map with Google Maps UI */}
+            <div className="lg:w-1/2 w-full h-[500px] relative rounded-3xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 bg-[#e5e3df] dark:bg-[#1a1a24]">
+              {/* Map Background Wrapper to make it look like GMap terrain/water */}
+              <div className="absolute inset-0 bg-[#aad3df] dark:bg-[#0f172a] flex items-center justify-center p-4">
+                <div className="absolute inset-0 bg-white dark:bg-[#1a1a24] opacity-80 mix-blend-overlay pointer-events-none"></div>
+                <div style={{ transform: `scale(${mapScale}) translate(${mapPan.x}px, ${mapPan.y}px)`, transition: 'transform 0.3s ease-out' }} className="w-full h-full flex items-center justify-center">
+                <IndiaMap
+                  showTooltip={!selectedState}
+                  enableZoom={true}
+                  minZoom={1}
+                  maxZoom={8}
+                  multiSelect={false}
+                  hoverColor="#10b981"
+                  selectedColor="#059669"
+                  fillColor={isDark ? "#2d3748" : "#f1f3f4"}
+                  strokeColor={isDark ? "#4a5568" : "#dadce0"}
+                  strokeWidth={0.5}
+                  onStateClick={(name) => setSelectedState(name === selectedState ? null : name)}
+                  enableChoropleth={layerMode === 'choropleth'}
+                  stateData={stateDataMock}
+                  tooltipContent={(name, data) => {
+                    const status = data?.color === '#ea4335' ? 'High Risk' : 
+                                   data?.color === '#fbbc04' ? 'Delayed' : 
+                                   data?.color === '#4285f4' ? 'Needs Attention' : 'On Track';
+                    return (
+                      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3 rounded-xl shadow-2xl text-xs min-w-[150px]">
+                        <strong className="block mb-2 text-slate-800 dark:text-slate-100 text-sm">{name}</strong>
+                        {data?.value ? (
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-slate-500 font-medium">Projects:</span>
+                              <span className="font-bold text-slate-700 dark:text-slate-200">{data.value}</span>
+                            </div>
+                            <div className="flex items-center space-x-1.5">
+                              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: data.color }}></span>
+                              <span className="font-bold uppercase tracking-wider text-[9px]" style={{ color: data.color }}>{status}</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 font-medium italic">No active projects</span>
+                        )}
+                      </div>
+                    );
+                  }}
+                />
                 </div>
               </div>
+
+              {/* Top Left: Search Bar Overlay */}
+              <div className="absolute top-4 left-4 right-4 md:right-auto md:w-80 flex bg-white dark:bg-slate-900 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden z-10 items-center px-4 py-3">
+                <Menu className="w-5 h-5 text-slate-500 mr-3 cursor-pointer hover:text-slate-800 dark:hover:text-slate-200" />
+                <input 
+                  type="text" 
+                  placeholder="Search states, projects..." 
+                  className="flex-1 bg-transparent border-none outline-none text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 font-medium"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <div className="pl-3 border-l border-slate-200 dark:border-slate-700 ml-2">
+                  <Search className="w-5 h-5 text-blue-500 cursor-pointer" />
+                </div>
+              </div>
+
+              {/* Bottom Right: Zoom & Location Controls */}
+              <div className="absolute bottom-6 right-4 flex flex-col space-y-2 z-10">
+                <button onClick={handleReset} className="bg-white dark:bg-slate-800 p-2.5 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                  <Crosshair className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                </button>
+                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden">
+                  <button onClick={handleZoomIn} className="p-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border-b border-slate-100 dark:border-slate-700">
+                    <Plus className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                  </button>
+                  <button onClick={handleZoomOut} className="p-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                    <Minus className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Bottom Left: Map Layers */}
+              <div className="absolute bottom-6 left-4 z-10">
+                <button onClick={() => setLayerMode(prev => prev === 'default' ? 'choropleth' : 'default')} className={`p-2.5 rounded-xl shadow-lg border transition-colors flex items-center justify-center relative overflow-hidden group ${layerMode === 'choropleth' ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'}`}>
+                  <Layers className={`w-6 h-6 relative z-10 ${layerMode === 'choropleth' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-200'}`} />
+                </button>
+              </div>
+
+              {/* Slide-in State Details Card (like Google Maps Sidebar) */}
+              <motion.div 
+                initial={{ x: "-110%", opacity: 0 }}
+                animate={{ x: selectedState ? 0 : "-110%", opacity: selectedState ? 1 : 0 }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="absolute top-20 left-4 w-72 max-h-[350px] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-y-auto z-20 flex flex-col"
+              >
+                {selectedState && (
+                  <>
+                    <div className="relative h-24 bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                       <div className="absolute inset-0 bg-blue-500/20 z-0"></div>
+                       <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent z-10"></div>
+                       <button 
+                         onClick={() => setSelectedState(null)}
+                         className="absolute top-3 right-3 z-20 bg-black/30 hover:bg-black/50 text-white rounded-full p-1 backdrop-blur-sm transition-colors"
+                       >
+                         <X className="w-4 h-4" />
+                       </button>
+                       <div className="absolute bottom-3 left-4 z-20">
+                         <h3 className="text-xl font-bold text-white tracking-tight">{selectedState}</h3>
+                         <div className="flex items-center text-slate-200 text-xs mt-0.5 font-medium">
+                           <MapPin className="w-3 h-3 mr-1" />
+                           India
+                         </div>
+                       </div>
+                    </div>
+                    
+                    <div className="p-4 flex-1">
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-sm font-bold text-slate-800 dark:text-slate-200">Overview</span>
+                        <span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-bold rounded uppercase tracking-wider">Region</span>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+                          <span className="text-xs text-slate-500 font-medium flex items-center">
+                            <Building2 className="w-3 h-3 mr-1.5" /> Projects
+                          </span>
+                          <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                            {["Maharashtra", "Uttar Pradesh", "Karnataka", "Delhi", "Gujarat", "Tamil Nadu"].includes(selectedState) ? (
+                              <span className="text-emerald-600 font-black">Active Data</span>
+                            ) : "0"}
+                          </span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+                          <span className="text-xs text-slate-500 font-medium flex items-center">
+                            <AlertTriangle className="w-3 h-3 mr-1.5" /> Risk Profile
+                          </span>
+                          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+                            Evaluating
+                          </span>
+                        </div>
+                      </div>
+
+                      <button onClick={() => handleDemoLogin('officer')} className="w-full mt-5 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors flex items-center justify-center">
+                        <BarChart3 className="w-4 h-4 mr-2" /> Dashboard
+                      </button>
+                    </div>
+                  </>
+                )}
+              </motion.div>
             </div>
 
           </div>

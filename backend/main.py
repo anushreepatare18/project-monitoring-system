@@ -7,7 +7,7 @@ import numpy as np
 import shap
 import os
 from sqlalchemy.orm import Session
-from backend.app_db import SessionLocal, engine, Project, Alert, AuditLog, ProjectHistory
+from backend.app_db import SessionLocal, engine, Project, Alert, AuditLog, ProjectHistory, SectorThreshold, ModelVersion
 from typing import List, Optional
 from datetime import datetime
 import csv
@@ -88,6 +88,23 @@ class AlertReview(BaseModel):
     officer_notes: Optional[str] = None
     user_role: str = "Officer"
 
+class SectorThresholdSchema(BaseModel):
+    sector: str
+    critical_threshold: float
+    high_threshold: float
+    class Config:
+        orm_mode = True
+
+class ModelVersionSchema(BaseModel):
+    version: str
+    deployed_at: datetime
+    accuracy: Optional[float]
+    pr_auc: Optional[float]
+    description: Optional[str]
+    is_active: bool
+    class Config:
+        orm_mode = True
+
 from backend.ml_core.inference.infer import run_inference
 
 # Mount the grounded chatbot router
@@ -146,8 +163,18 @@ def update_project(project_id: str, data: ProjectUpdate, db: Session = Depends(g
     data_dict['sector'] = project.sector
     data_dict['agency'] = project.implementing_agency
     
-    risk_res = predict_risk_internal(data_dict)
+    risk_res = predict_risk_internal(data_dict, db)
     
+    # FR-AI-02: NLP Risk keyword scanning on remarks
+    risk_keywords = ["litigation", "strike", "funds delayed", "land acquisition", "protest", "clearance pending"]
+    remarks = data.Issues_Remarks.lower() if data.Issues_Remarks else ""
+    nlp_flagged = any(keyword in remarks for keyword in risk_keywords)
+    if nlp_flagged:
+        risk_res['risk_score'] = min(100.0, risk_res['risk_score'] + 15.0)
+        if risk_res['risk_score'] > 75:
+            risk_res['risk_level'] = "Critical"
+            risk_res['alert_triggered'] = True
+
     # Update project data
     project.expenditure_cr = data.Expenditure_Cr
     project.physical_progress_pct = data.Physical_Progress_Pct
@@ -162,11 +189,24 @@ def update_project(project_id: str, data: ProjectUpdate, db: Session = Depends(g
         alert = Alert(
             project_id=project.id,
             risk_score=risk_res['risk_score'],
-            message=f"High risk detected. Anomalous: {risk_res['is_anomalous']}",
+            message=f"High risk detected. Anomalous: {risk_res['is_anomalous']}. NLP Flag: {nlp_flagged}",
             status="Open"
         )
         db.add(alert)
         send_notification(project.id, risk_res['risk_level'])
+
+    # FR-ANOM-01 & FR-ANOM-02: Financial vs Physical Progress Audit Alert
+    fin_prog = data.Financial_Progress_Pct
+    phys_prog = data.Physical_Progress_Pct
+    if fin_prog > (phys_prog + 20):
+        audit_alert = Alert(
+            project_id=project.id,
+            risk_score=100.0,
+            message="Audit Alert: Financial progress exceeds physical progress by > 20%",
+            status="Audit_Required"
+        )
+        db.add(audit_alert)
+        project.status = "Frozen - Audit Required"
     
     # Audit log
     audit = AuditLog(
@@ -217,9 +257,9 @@ def update_project(project_id: str, data: ProjectUpdate, db: Session = Depends(g
 
 @app.post("/api/predict")
 async def predict_risk(data: dict):
-    return predict_risk_internal(data)
+    return predict_risk_internal(data, None)
 
-def predict_risk_internal(data: dict):
+def predict_risk_internal(data: dict, db: Optional[Session] = None):
     # Construct a 1-row DataFrame mimicking the historical updates required by the pipeline
     import pandas as pd
     import traceback
@@ -337,11 +377,19 @@ def predict_risk_internal(data: dict):
         if isinstance(s, dict) and 'feature' in s and 'impact' in s
     ]
 
+    critical_threshold = 75.0
+    if db:
+        sector_name = data.get("sector")
+        if sector_name:
+            threshold_record = db.query(SectorThreshold).filter(SectorThreshold.sector == sector_name).first()
+            if threshold_record:
+                critical_threshold = threshold_record.critical_threshold
+
     return {
         "risk_score":        round(risk_score, 2),
         "risk_level":        res['risk_band'],
         "is_anomalous":      res['anomaly_score'] > 0,
-        "alert_triggered":   risk_score > 75,
+        "alert_triggered":   risk_score > critical_threshold,
         "shap_explanations": valid_shap,
         "p_cost":            res.get('p_cost', 0),
         "p_time":            res.get('p_time', 0),
@@ -405,7 +453,10 @@ def get_project_explanation(project_id: str, db: Session = Depends(get_db)):
         Delay_Months=project.delay_months,
         Cost_Overrun_Pct=project.cost_overrun_pct
     )
-    risk_res = predict_risk_internal(data)
+    # We pass the db session and include sector to use sector specific threshold
+    data_dict = data.dict() if hasattr(data, 'dict') else data.model_dump()
+    data_dict['sector'] = project.sector
+    risk_res = predict_risk_internal(data_dict, db)
     
     return {
         "project_id": project.id,
@@ -510,6 +561,23 @@ def get_public_projects(db: Session = Depends(get_db)):
         })
     return public_projects
 
+@app.get("/api/public/projects/{project_id}")
+def get_public_project(project_id: str, db: Session = Depends(get_db)):
+    p = db.query(Project).filter(Project.id == project_id).first()
+    if not p:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {
+        "project_id": p.id,
+        "project_name": p.name,
+        "sector": p.sector,
+        "ministry": p.ministry,
+        "agency": p.implementing_agency,
+        "approved_cost": p.original_cost_cr,
+        "expenditure": p.expenditure_cr,
+        "physical_progress": p.physical_progress_pct,
+        "status": p.status
+    }
+
 @app.get("/api/analytics/drivers")
 def get_analytics_drivers(db: Session = Depends(get_db)):
     # FR-12 Cost Escalation Analysis: Analyze factors associated with cost growth
@@ -588,3 +656,100 @@ Keep your answers clear, concise, and structured.
     except Exception as e:
         return {"reply": f"An error occurred while generating the response: {str(e)}"}
 
+
+# FR-29: Allow administrators to configure risk-score alert thresholds per sector
+@app.get("/api/thresholds")
+def get_thresholds(db: Session = Depends(get_db)):
+    thresholds = db.query(SectorThreshold).all()
+    return thresholds
+
+@app.post("/api/thresholds")
+def set_thresholds(threshold: SectorThresholdSchema, db: Session = Depends(get_db)):
+    record = db.query(SectorThreshold).filter(SectorThreshold.sector == threshold.sector).first()
+    if record:
+        record.critical_threshold = threshold.critical_threshold
+        record.high_threshold = threshold.high_threshold
+    else:
+        new_record = SectorThreshold(
+            sector=threshold.sector, 
+            critical_threshold=threshold.critical_threshold, 
+            high_threshold=threshold.high_threshold
+        )
+        db.add(new_record)
+    db.commit()
+    return {"status": "success"}
+
+# FR-32: Export risk reports
+from fastapi.responses import StreamingResponse
+import io
+
+@app.get("/api/export/projects")
+def export_projects_csv(db: Session = Depends(get_db)):
+    projects = db.query(Project).all()
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["ID", "Name", "Sector", "Ministry", "Agency", "Cost", "Progress", "Delay", "Risk Score", "Risk Level"])
+    for p in projects:
+        writer.writerow([p.id, p.name, p.sector, p.ministry, p.implementing_agency, p.original_cost_cr, p.physical_progress_pct, p.delay_months, p.risk_score, p.risk_level])
+    output.seek(0)
+    return StreamingResponse(iter([output.getvalue()]), media_type="text/csv", headers={"Content-Disposition": "attachment; filename=projects_export.csv"})
+
+# FR-40: Version history of risk-model deployments
+@app.get("/api/models/versions")
+def get_model_versions(db: Session = Depends(get_db)):
+    return db.query(ModelVersion).order_by(ModelVersion.deployed_at.desc()).all()
+
+@app.post("/api/models/versions")
+def add_model_version(version: ModelVersionSchema, db: Session = Depends(get_db)):
+    # Deactivate others if this one is active
+    if version.is_active:
+        active_models = db.query(ModelVersion).filter(ModelVersion.is_active == True).all()
+        for m in active_models:
+            m.is_active = False
+            
+    new_version = ModelVersion(
+        version=version.version,
+        accuracy=version.accuracy,
+        pr_auc=version.pr_auc,
+        description=version.description,
+        is_active=version.is_active
+    )
+    db.add(new_version)
+    db.commit()
+    return {"status": "success"}
+
+from fastapi import UploadFile, File
+
+@app.post("/api/projects/upload-dpr")
+async def upload_dpr(file: UploadFile = File(...)):
+    # FR-PROJ-01: Uploading a DPR to parse milestones
+    content = await file.read()
+    # Mocking extraction logic (would normally use NLP/Regex on the PDF text)
+    milestones = [
+        {"name": "Land Acquisition Completed", "date": "2024-06-01"},
+        {"name": "Environmental Clearance", "date": "2024-08-15"},
+        {"name": "Foundation Construction", "date": "2025-01-10"}
+    ]
+    baseline_metrics = {
+        "Total_Estimated_Cost": 500.0,
+        "Scheduled_Inception_Date": "2024-01-01",
+        "Expected_Completion_Date": "2026-12-31"
+    }
+    return {"status": "success", "milestones": milestones, "baseline_metrics": baseline_metrics, "filename": file.filename}
+
+@app.get("/api/escalations")
+def get_escalations(db: Session = Depends(get_db)):
+    # FR-ESC-01 & FR-ESC-02: Smart Escalation Matrix
+    # Check open alerts older than 45 days (mocked as open alerts here)
+    alerts = db.query(Alert).filter(Alert.status == "Open").all()
+    escalations = []
+    for a in alerts:
+        # Mocking delay check logic
+        escalations.append({
+            "alert_id": a.id,
+            "project_id": a.project_id,
+            "escalated_to": "State Nodal Officer",
+            "reason": "Unresolved alert for > 45 days",
+            "message": a.message
+        })
+    return escalations

@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-background: #f8fafc;
   --color-foreground: #0f172a;
@@ -24,14 +26,30 @@
     @apply border-gray-200;
   }
   body {
-    @apply bg-slate-50 text-slate-900 scroll-smooth min-h-screen relative;
-    background-color: #f8fafc;
-    background-image: 
-      radial-gradient(at 0% 0%, hsla(160, 100%, 85%, 0.4) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, hsla(240, 100%, 85%, 0.4) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, hsla(38, 100%, 85%, 0.4) 0px, transparent 50%),
-      radial-gradient(at 0% 100%, hsla(200, 100%, 85%, 0.4) 0px, transparent 50%);
+    @apply bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 scroll-smooth min-h-screen relative;
     background-attachment: fixed;
+  }
+  
+  :root {
+    --bg-grad-1: hsla(160, 100%, 85%, 0.4);
+    --bg-grad-2: hsla(240, 100%, 85%, 0.4);
+    --bg-grad-3: hsla(38, 100%, 85%, 0.4);
+    --bg-grad-4: hsla(200, 100%, 85%, 0.4);
+  }
+
+  .dark {
+    --bg-grad-1: hsla(160, 100%, 15%, 0.4);
+    --bg-grad-2: hsla(240, 100%, 15%, 0.4);
+    --bg-grad-3: hsla(38, 100%, 15%, 0.4);
+    --bg-grad-4: hsla(200, 100%, 15%, 0.4);
+  }
+
+  body {
+    background-image: 
+      radial-gradient(at 0% 0%, var(--bg-grad-1) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, var(--bg-grad-2) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, var(--bg-grad-3) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, var(--bg-grad-4) 0px, transparent 50%);
   }
   
   /* Custom Scrollbar */

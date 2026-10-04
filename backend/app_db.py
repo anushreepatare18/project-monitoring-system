@@ -76,4 +76,21 @@ class ProjectHistory(Base):
     is_anomalous = Column(Boolean, default=False)
     timestamp = Column(DateTime, default=datetime.utcnow)
 
+class SectorThreshold(Base):
+    __tablename__ = "sector_thresholds"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    sector = Column(String, unique=True, index=True)
+    critical_threshold = Column(Float, default=75.0)
+    high_threshold = Column(Float, default=50.0)
+
+class ModelVersion(Base):
+    __tablename__ = "model_versions"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    version = Column(String, index=True)
+    deployed_at = Column(DateTime, default=datetime.utcnow)
+    accuracy = Column(Float, nullable=True)
+    pr_auc = Column(Float, nullable=True)
+    description = Column(Text, nullable=True)
+    is_active = Column(Boolean, default=False)
+
 Base.metadata.create_all(bind=engine)

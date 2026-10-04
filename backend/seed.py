@@ -1,39 +1,68 @@
-from app_db import SessionLocal, Project
-import uuid
-import random
+import pandas as pd
+from sqlalchemy.orm import Session
+import sys
+import os
 
-db = SessionLocal()
+# Ensure backend can be imported
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from backend.app_db import engine, Project
 
-def seed_data():
-    if db.query(Project).count() > 0:
-        print("Database already seeded.")
-        return
-
-    ministries = ["Ministry of Railways", "Ministry of Road Transport", "Ministry of Power"]
-    sectors = ["Railways", "Highways", "Power Generation"]
+def seed():
+    print("Reading dataset.csv...")
+    df = pd.read_csv("dataset.csv")
     
-    for i in range(10):
-        original_cost = random.uniform(100.0, 1000.0)
-        expenditure = original_cost * random.uniform(0.1, 1.2)
-        physical_progress = random.uniform(5.0, 100.0)
-        delay = random.uniform(0, 24)
+    # Sort by project_id and update_date, and keep the latest update for each project
+    df['update_date'] = pd.to_datetime(df['update_date'])
+    df = df.sort_values(['project_id', 'update_date'])
+    latest_df = df.drop_duplicates(subset=['project_id'], keep='last')
+    
+    with Session(engine) as session:
+        # Clear existing demo projects
+        session.query(Project).delete()
         
-        project = Project(
-            id=f"PROJ-{str(uuid.uuid4())[:8].upper()}",
-            name=f"Sample Project {i+1}",
-            sector=random.choice(sectors),
-            ministry=random.choice(ministries),
-            implementing_agency=f"Agency {i % 3 + 1}",
-            original_cost_cr=round(original_cost, 2),
-            expenditure_cr=round(expenditure, 2),
-            physical_progress_pct=round(physical_progress, 2),
-            delay_months=round(delay, 2),
-            cost_overrun_pct=round(max(0, (expenditure - original_cost) / original_cost * 100), 2)
-        )
-        db.add(project)
-    
-    db.commit()
-    print("Database seeded with 10 projects.")
+        projects = []
+        for _, row in latest_df.iterrows():
+            # Derive risk level based on overrun and delay for prototype
+            risk_score = 0.0
+            if row['delayed_flag'] == 1: risk_score += 40
+            if row['overrun_flag'] == 1: risk_score += 40
+            if pd.notnull(row['physical_progress_pct']) and pd.notnull(row['financial_progress_pct']):
+                if row['financial_progress_pct'] > row['physical_progress_pct'] + 20:
+                    risk_score += 20
+            
+            risk_level = "Low"
+            if risk_score >= 75: risk_level = "Critical"
+            elif risk_score >= 50: risk_level = "High"
+            elif risk_score >= 25: risk_level = "Medium"
+
+            # Calculate cost overrun %
+            rev_cost = row['revised_cost'] if pd.notnull(row['revised_cost']) else row['sanctioned_cost']
+            sanc_cost = row['sanctioned_cost'] if pd.notnull(row['sanctioned_cost']) else 0
+            cost_overrun_pct = 0.0
+            if sanc_cost > 0:
+                cost_overrun_pct = max(0, ((rev_cost - sanc_cost) / sanc_cost) * 100)
+
+            project = Project(
+                id=str(row['project_id']),
+                name=f"Infrastructure Project {row['project_id']}", 
+                sector=str(row['sector']),
+                ministry=str(row['ministry']),
+                implementing_agency=str(row['agency']),
+                original_cost_cr=float(row['sanctioned_cost']) if pd.notnull(row['sanctioned_cost']) else 0.0,
+                expenditure_cr=float(row['cumulative_expenditure']) if pd.notnull(row['cumulative_expenditure']) else 0.0,
+                cost_overrun_pct=float(cost_overrun_pct),
+                delay_months=float(12.0) if row['delayed_flag'] == 1 else 0.0, # Placeholder mock
+                physical_progress_pct=float(row['physical_progress_pct']) if pd.notnull(row['physical_progress_pct']) else 0.0,
+                status="Ongoing",
+                risk_score=float(risk_score),
+                risk_level=risk_level,
+                is_anomalous=(row['financial_progress_pct'] > row['physical_progress_pct'] + 20) if pd.notnull(row['physical_progress_pct']) and pd.notnull(row['financial_progress_pct']) else False
+            )
+            projects.append(project)
+        
+        session.add_all(projects)
+        session.commit()
+        print(f"Successfully seeded {len(projects)} projects from dataset.csv.")
 
 if __name__ == "__main__":
-    seed_data()
+    seed()

@@ -1,76 +1,91 @@
-# PRAGYA AI — Prototype
+# PRAGYA AI — AI-Powered Infrastructure Project Monitoring System
 
-**PRAGYA AI** is an AI-powered Infrastructure Project Monitoring System developed for the Smart India Hackathon (SIH 2026). It provides a unified, role-based platform for monitoring national infrastructure projects, triaging risk, and exposing approved data to the public.
-
-## Overview
-This repository contains the frontend React prototype for PRAGYA AI. 
-
-> **Important Prototype Notice:** 
-> - The data shown in this application is **illustrative sample data**. 
-> - Feature contributions (SHAP values), risk scores, and anomaly detections are simulated to demonstrate the UI workflow and do not represent a live, connected AI backend.
-> - "AI Assists. Humans Decide." The system is designed to support, not replace, human monitoring officers.
-> - Authorization is currently handled via client-side Context for demo purposes.
-
-## Key Features by Role
-- **Implementing Agency:** Track assigned projects, submit physical/financial progress updates, and respond to clarification requests.
-- **Ministry / Department:** View a high-level portfolio overview of all assigned projects with beautiful descriptive analytics.
-- **Monitoring Officer:** A powerful triage dashboard to review AI risk alerts, inspect progress anomalies, and log official reviews.
-- **Public:** A sanitized transparency portal providing published execution data to citizens, strictly shielding all internal AI scores and officer notes.
-- **PRAGYA AI Assistant:** A role-aware, read-only chat interface for querying project details and summarizing portfolios naturally.
+PRAGYA AI is a comprehensive, predictive project-monitoring intelligence platform built for government ministries, monitoring officers, and implementing agencies. It aims to reduce delays, minimize cost overruns, and improve accountability in infrastructure projects through real-time tracking, AI-driven risk triage, anomaly detection, and transparent public reporting.
 
 ## Technology Stack
-- **Framework:** Next.js 14 (App Router)
-- **Styling:** Tailwind CSS v4
-- **Icons:** Lucide React
-- **Charts:** Recharts
-- **State Management:** React Context API
+- **Frontend:** Next.js (React), Tailwind CSS, Recharts (Data Visualization), Lucide React (Icons)
+- **Backend:** FastAPI (Python), SQLite (via SQLAlchemy)
+- **AI/ML:** SHAP (Explainable AI), Pandas, Scikit-learn (Risk Inference Engine), Google Gemini (Grounded Chatbot Assistant)
 
 ## Prerequisites
-- Node.js (v18 or higher)
+- Node.js v18+ 
+- Python 3.9+ 
 - npm or yarn
 
-## Installation & Setup
+## Installation
 
-1. Clone the repository.
-2. Install dependencies:
+1. **Clone the repository and install frontend dependencies:**
    ```bash
    npm install
    ```
-3. Start the development server:
+
+2. **Set up the backend environment:**
+   Ensure you have Python installed. Navigate to the project root and create a virtual environment (optional but recommended):
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -r backend/requirements.txt
+   ```
+   *(Note: Ensure requirements like fastapi, uvicorn, sqlalchemy, pandas, shap are installed.)*
+
+## Environment Setup
+Create a `.env` file in the root directory (you can use `.env.example` if available) and configure the following variables:
+```
+# .env
+GEMINI_API_KEY=your_google_gemini_api_key_here
+```
+*Note: Do not commit `.env` containing your actual API keys. The Gemini API key is required only for the PRAGYA Assistant Chatbot functionality.*
+
+## How to Run
+
+1. **Start the Backend API Server:**
+   From the project root, start the FastAPI server on port 8000:
+   ```bash
+   uvicorn backend.main:app --reload
+   ```
+
+2. **Start the Frontend Development Server:**
+   In a new terminal window, start the Next.js server:
    ```bash
    npm run dev
    ```
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Demo Instructions for Judges
+3. **Access the application:**
+   Open your browser and navigate to `http://localhost:3000`.
 
-To quickly evaluate the system without setting up accounts, use the **1-Click Demo Login** on the home page.
+## Demo Login Instructions
+The prototype includes mock role-based authentication. Use the following credentials to explore different workflows:
 
-### Recommended Demo Sequence
+- **System Admin:**
+  - Username: `admin`
+  - Password: `admin`
+- **Monitoring Officer:**
+  - Username: `officer_1` (or any starting with "officer")
+  - Password: `any_password`
+- **Implementing Agency:**
+  - Username: `agency_nhai` (or any starting with "agency")
+  - Password: `any_password`
+- **Public Visitor:** No login required. Click "Public Dashboard" from the login screen or navigate to `/dashboard/public`.
 
-1. **Log in as Implementing Agency**
-   - Click "Implementing Agency" on the login screen.
-   - Navigate to **Update Forms** and submit a progress update.
-   - Check the **Priority Queue** to see an open clarification request.
-2. **Switch to Monitoring Officer**
-   - Use the bottom-left sidebar menu to **Log Out**, then log in as **Monitoring Officer**.
-   - Note the comprehensive KPIs (Critical Risk, Overdue Follow-ups).
-   - Go to **Alert Queue**, click "Review" on an alert, and observe the AI Explanation (SHAP) and internal action workflow.
-   - Try out the floating **PRAGYA AI Assistant** (bottom right) and ask "What projects require my attention?"
-3. **Switch to Ministry / Department**
-   - Log out, log in as **Ministry**.
-   - Navigate to **Portfolio Analytics** to see portfolio-wide Recharts visualizations.
-   - Verify that the Ministry can see Alerts but cannot close them (enforcing the read-only oversight boundary).
-4. **Switch to Public**
-   - Log out, log in as **Public**.
-   - Go to **Browse Projects** and verify that no internal risk scores, SHAP values, or alerts are visible.
-   - Try asking the Chatbot about "risk scores" and verify the security rejection.
+## Available Features
+- **Role-Based Dashboards:** Distinct workflows for Agencies, Ministry Officials, Monitoring Officers, and Public Citizens.
+- **Explainable AI (XAI):** Predictive risk scoring (delay/cost) with SHAP value visual explanations indicating *why* a project is flagged.
+- **Anomaly Detection:** Rule-based and predictive cross-checking (e.g., Financial vs. Physical progress anomalies).
+- **Public Transparency Portal:** A highly restricted, read-only view of approved datasets.
+- **PRAGYA Assistant:** A grounded NLP chatbot capable of answering dataset-specific questions securely.
+- **Alert Triage Workflow:** End-to-end alert handling for monitoring officers and agencies.
 
-## Known Limitations & Future Work
-- **Backend Integration:** Currently relies on `src/context/ProjectContext.tsx` and `src/data/mockProjects.ts`. Future phases require integrating a PostgreSQL/FastAPI backend.
-- **Authentication:** Security boundaries are enforced via client-side routing and data filtering. A robust JWT/OAuth integration is required for production.
-- **Live AI Models:** The SHAP values and risk scores are static. Integration with the PAIMANA prediction pipeline is pending.
-- **Exporting:** PDF export capabilities are mocked for Phase 4. CSV exporting works via local Blob generation.
+## Data and AI Limitations
+- **Data Source:** The system currently utilizes a synthetic, localized dataset (`dataset.csv` and `pragya.db`) strictly for prototype demonstration. It is not currently connected to live government systems (e.g., PAIMANA).
+- **AI Models:** The ML risk model and explanations are driven by an offline-trained Random Forest model and SHAP. The predictions are intended for demonstrative triage and *do not replace human judgment*. "AI assists. Humans decide."
+- **Authorization:** While the backend restricts public data via scoped endpoints, some role-based visibility rules are primarily enforced client-side for rapid prototyping.
 
-## License
-Created for Smart India Hackathon. All rights reserved.
+## Known Issues
+- Sector distribution charts cap at the top 10/14 sectors; long-tail sectors may not be visible in some overview visualisations.
+- If the Gemini API key is not provided, the PRAGYA Assistant Chatbot will return an error notice instead of functioning.
+
+## Future Integration Requirements
+- **Live Authentication:** Integration with SSO / e-Pramaan or NIC identity services.
+- **Database Scaling:** Migration from SQLite to an enterprise relational database (e.g., PostgreSQL).
+- **GIS Integration:** Integration of live satellite / mapping systems (e.g., Leaflet/Mapbox/Bhuvan).
+- **PWA / Offline Sync:** Implementation of service workers for offline update submissions.

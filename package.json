@@ -11,6 +11,7 @@
   "dependencies": {
     "clsx": "^2.1.1",
     "framer-motion": "^13.4.6",
+    "india-map-react": "^2.0.5",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "lucide-react": "^1.48.0",
@@ -19,6 +20,7 @@
     "papaparse": "^5.7.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "react-simple-maps": "^5.0.5",
     "recharts": "^3.10.1",
     "tailwind-merge": "^3.7.0"
   },
