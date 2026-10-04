@@ -1,0 +1,23 @@
+{
+  "model_name": "CatBoost",
+  "target": "overrun_flag",
+  "version": "v2.0.0",
+  "feature_set_version": "v2",
+  "intended_use": "Early-warning risk prediction for government project monitoring officers. Human officers must verify every prediction before taking action.",
+  "limitations": "Trained on synthetic data. Performance on real-world data may differ. Always verify predictions with domain experts.",
+  "known_weak_sectors": "Sectors with fewer than 30 training projects may have lower accuracy. Check per-sector metrics in the metrics JSON.",
+  "training_date_range": "2018-02-08 to 2024-03-19",
+  "test_date_range": "2019-01-22 to 2029-12-25",
+  "metrics_test": {
+    "pr_auc": 0.9961708860759494,
+    "roc_auc": 0.9967700596296684,
+    "brier_score": 0.002502019911024677,
+    "precision": 1.0,
+    "recall": 0.9936708860759493,
+    "f1": 0.9968253968253968,
+    "threshold": 0.4,
+    "n_samples": 400,
+    "n_positives": 158
+  },
+  "trained_on": "2026-10-04"
+}

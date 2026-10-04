@@ -1,0 +1,146 @@
+{
+  "target": "implementation_risk_flag",
+  "selected_model": "LogisticRegression",
+  "model_version": "v2.0.0",
+  "feature_set_version": "v2",
+  "val_pr_auc": 0.9098650293847736,
+  "threshold": 0.4,
+  "min_recall_floor": 0.45,
+  "all_results": {
+    "LogisticRegression": {
+      "val": {
+        "pr_auc": 0.9098650293847736,
+        "roc_auc": 0.9450808625336927,
+        "brier_score": 0.052368163445749655,
+        "precision": 0.9354838709677419,
+        "recall": 0.8207547169811321,
+        "f1": 0.8743718592964824,
+        "threshold": 0.4,
+        "n_samples": 400,
+        "n_positives": 106
+      },
+      "test": {
+        "pr_auc": 0.8944385893392418,
+        "roc_auc": 0.9127523799560624,
+        "brier_score": 0.0913414932583311,
+        "precision": 0.88,
+        "recall": 0.8354430379746836,
+        "f1": 0.8571428571428571,
+        "threshold": 0.4,
+        "n_samples": 400,
+        "n_positives": 158
+      }
+    },
+    "RandomForest": {
+      "val": {
+        "pr_auc": 0.8221141643228255,
+        "roc_auc": 0.9200840713643947,
+        "brier_score": 0.0857727235842212,
+        "precision": 0.780952380952381,
+        "recall": 0.7735849056603774,
+        "f1": 0.7772511848341233,
+        "threshold": 0.4,
+        "n_samples": 400,
+        "n_positives": 106
+      },
+      "test": {
+        "pr_auc": 0.8605496917090308,
+        "roc_auc": 0.9063709593053668,
+        "brier_score": 0.10448560786261218,
+        "precision": 0.825,
+        "recall": 0.8354430379746836,
+        "f1": 0.8301886792452831,
+        "threshold": 0.4,
+        "n_samples": 400,
+        "n_positives": 158
+      }
+    },
+    "XGBoost": {
+      "val": {
+        "pr_auc": 0.8834229134134595,
+        "roc_auc": 0.9250096264921063,
+        "brier_score": 0.05986562371253967,
+        "precision": 0.9130434782608695,
+        "recall": 0.7924528301886793,
+        "f1": 0.8484848484848485,
+        "threshold": 0.4,
+        "n_samples": 400,
+        "n_positives": 106
+      },
+      "test": {
+        "pr_auc": 0.9167383503784948,
+        "roc_auc": 0.9277382571398682,
+        "brier_score": 0.06963269412517548,
+        "precision": 0.9315068493150684,
+        "recall": 0.8607594936708861,
+        "f1": 0.8947368421052632,
+        "threshold": 0.4,
+        "n_samples": 400,
+        "n_positives": 158
+      }
+    },
+    "CatBoost": {
+      "val": {
+        "pr_auc": 0.873366528287469,
+        "roc_auc": 0.9259241432422026,
+        "brier_score": 0.06806066231170732,
+        "precision": 0.9,
+        "recall": 0.7641509433962265,
+        "f1": 0.826530612244898,
+        "threshold": 0.4,
+        "n_samples": 400,
+        "n_positives": 106
+      },
+      "test": {
+        "pr_auc": 0.9034812502269131,
+        "roc_auc": 0.9255544513024375,
+        "brier_score": 0.08669550380645057,
+        "precision": 0.8835616438356164,
+        "recall": 0.8164556962025317,
+        "f1": 0.8486842105263158,
+        "threshold": 0.4,
+        "n_samples": 400,
+        "n_positives": 158
+      }
+    }
+  },
+  "backtest": [
+    {
+      "pr_auc": 0.7799520264724417,
+      "roc_auc": 0.8906691134952004,
+      "brier_score": 0.1109575,
+      "precision": 0.625,
+      "recall": 0.8695652173913043,
+      "f1": 0.7272727272727273,
+      "threshold": 0.4,
+      "n_samples": 200,
+      "n_positives": 46,
+      "cutoff": "2023-10-05"
+    },
+    {
+      "pr_auc": 0.8199425357341494,
+      "roc_auc": 0.8773465246067985,
+      "brier_score": 0.11562100000000002,
+      "precision": 0.6666666666666666,
+      "recall": 0.8148148148148148,
+      "f1": 0.7333333333333333,
+      "threshold": 0.4,
+      "n_samples": 200,
+      "n_positives": 54,
+      "cutoff": "2024-08-20"
+    },
+    {
+      "pr_auc": 0.9553316764283033,
+      "roc_auc": 0.9359903381642511,
+      "brier_score": 0.0956795,
+      "precision": 0.8461538461538461,
+      "recall": 0.9166666666666666,
+      "f1": 0.88,
+      "threshold": 0.4,
+      "n_samples": 200,
+      "n_positives": 108,
+      "cutoff": "2025-07-20"
+    }
+  ],
+  "trained_on": "2026-10-04"
+}

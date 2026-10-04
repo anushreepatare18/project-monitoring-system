@@ -1,103 +1,204 @@
+"""
+PRAGYA AI — Grounded Retriever  (v2)
+======================================
+Executes structured query dicts (from intent_parser) against the results
+store. Enforces RBAC scope. Logs every query run for auditability.
+
+This step is purely deterministic: no LLM involved.
+"""
+from __future__ import annotations
+
+import json
+import logging
+from typing import Optional
+
 import pandas as pd
-import sys
-import os
 
-# Ensure we can import from ml_core
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from ml_core.inference.predict import explain_risk
+from chatbot.results_store import (
+    aggregate_by_sector,
+    get_project_record,
+    get_store,
+    query_store,
+)
 
-def fetch_data():
-    path = "ml_core/data/synthetic_projects.csv"
-    if not os.path.exists(path):
-        return pd.DataFrame()
-    df = pd.read_csv(path)
-    # Return only the latest snapshot for simplicity
-    df['update_date'] = pd.to_datetime(df['update_date'])
-    return df.sort_values(by=['project_id', 'update_date']).groupby('project_id').tail(1)
+logger = logging.getLogger(__name__)
 
-def retrieve_grounded_data(parsed_query: dict, scope: str = None) -> dict:
+
+def retrieve_grounded_data(
+    parsed_query: dict,
+    scope: Optional[str] = None,
+) -> dict:
     """
-    Executes the structured query against the data store.
-    Enforces RBAC scope.
+    Execute the structured query against the results store.
+
+    Parameters
+    ----------
+    parsed_query : dict
+        Output of intent_parser.parse_intent().
+    scope : str, optional
+        RBAC scope for the requesting officer.
+        "ALL" or None = no restriction.
+        A ministry name = restrict to that ministry only.
+
+    Returns
+    -------
+    dict with 'type' key describing the result shape, plus 'data' and
+    optionally 'count', 'as_of_date', 'query_run' (for audit).
     """
-    df = fetch_data()
-    if df.empty:
-        return {"error": "Data store unavailable."}
-        
-    # Enforce scope
-    if scope and scope != "ALL":
-        df = df[df['ministry'] == scope]
-        
     intent = parsed_query.get("intent")
-    
+    scope_ministry = scope if (scope and scope.upper() != "ALL") else None
+
+    # Audit: log the exact query
+    logger.info("[retriever] intent=%s query=%s scope=%s", intent, parsed_query, scope)
+
+    # ── EXPLAIN_PROJECT ───────────────────────────────────────────────────────
     if intent == "EXPLAIN_PROJECT":
-        pid = parsed_query["project_id"]
-        if pid not in df['project_id'].values:
-            return {"error": f"Project {pid} not found or outside your authorized scope."}
-        
-        # We need the full history for explain_risk, so read it fresh
-        full_df = pd.read_csv("ml_core/data/synthetic_projects.csv")
-        try:
-            explanation = explain_risk(pid, "2030-01-01", full_df)
+        pid = parsed_query.get("project_id", "")
+        record = get_project_record(pid, scope_ministry=scope_ministry)
+        if record is None:
+            msg = (
+                f"Project '{pid}' was not found in your authorised scope."
+                if scope_ministry
+                else f"Project '{pid}' was not found in the results store."
+            )
             return {
-                "type": "explanation",
-                "project_id": pid,
-                "data": explanation
+                "type":  "error",
+                "error": msg,
+                "query_run": f"get_project_record('{pid}', scope='{scope_ministry}')",
             }
-        except Exception as e:
-            return {"error": str(e)}
-            
-    elif intent == "COMPARE_PROJECTS":
-        pids = parsed_query["project_ids"]
-        mask = df['project_id'].isin(pids)
-        filtered = df[mask]
-        
-        if filtered.empty:
-            return {"error": "None of the requested projects were found in your scope."}
-            
-        data = filtered[['project_id', 'sector', 'physical_progress_pct', 'sanctioned_cost', 'expected_completion_date']].to_dict(orient="records")
         return {
-            "type": "comparison",
-            "data": data
+            "type":       "explanation",
+            "project_id": pid,
+            "data":       record,
+            "as_of_date": record.get("as_of_date", "unknown"),
+            "query_run":  f"get_project_record('{pid}')",
         }
-        
-    elif intent == "FILTER_PROJECTS":
-        filters = parsed_query.get("filters", {})
-        filtered = df.copy()
-        
-        # Apply mock risk band (for prototype without running inference on everything)
-        # Normally, we'd query a materialized view of risk scores
-        if "risk_band" in filters:
-            # We mock filtering based on overrun/delay flags since we don't have precomputed scores for all rows
-            if filters["risk_band"] == "High" or filters["risk_band"] == "Critical":
-                filtered = filtered[(filtered['overrun_flag'] == 1) | (filtered['delayed_flag'] == 1)]
-                
-        if "sector" in filters:
-            s = filters["sector"].lower()
-            filtered = filtered[filtered['sector'].str.lower() == s]
-            
-        if "min_milestone_delay_months" in filters:
-            # Mock calculation
-            filtered['delay_months'] = (pd.to_datetime(filtered['expected_completion_date']) - pd.to_datetime(filtered['planned_end'])).dt.days / 30.0
-            filtered = filtered[filtered['delay_months'] > filters["min_milestone_delay_months"]]
-            
-        if filtered.empty:
-            return {"type": "filtered_list", "data": [], "message": "No projects match the criteria."}
-            
-        results = filtered[['project_id', 'sector', 'ministry']].head(10).to_dict(orient="records")
-        return {
-            "type": "filtered_list",
-            "data": results,
-            "count": len(filtered)
-        }
-        
-    elif intent == "AGGREGATE":
-        if parsed_query.get("metric") == "cost_overruns":
-            grouped = df[df['overrun_flag'] == 1].groupby('sector').size().reset_index(name='overruns')
-            grouped = grouped.sort_values(by='overruns', ascending=False)
+
+    # ── COMPARE_PROJECTS ──────────────────────────────────────────────────────
+    if intent == "COMPARE_PROJECTS":
+        pids   = parsed_query.get("project_ids", [])
+        store  = get_store()
+        if scope_ministry:
+            store = store[store["ministry"] == scope_ministry]
+
+        rows   = store[store["project_id"].isin(pids)]
+        found  = list(rows["project_id"].unique())
+        missing = [p for p in pids if p not in found]
+
+        if rows.empty:
             return {
-                "type": "aggregation",
-                "data": grouped.to_dict(orient="records")
+                "type":  "error",
+                "error": (
+                    f"None of the requested projects "
+                    f"({', '.join(pids)}) were found in your authorised scope."
+                ),
+                "query_run": f"query_store(project_ids={pids})",
             }
-            
-    return {"error": "Unhandled intent."}
+
+        comparison_cols = [
+            "project_id", "sector", "ministry", "risk_band",
+            "composite_risk_score", "physical_progress_pct",
+            "milestone_delay_months", "cost_growth_pct",
+            "anomaly_flag", "as_of_date",
+        ]
+        data = rows[comparison_cols].to_dict(orient="records")
+        return {
+            "type":      "comparison",
+            "data":      data,
+            "missing":   missing,
+            "as_of_date": rows["as_of_date"].max(),
+            "query_run": f"query_store(project_ids={pids})",
+        }
+
+    # ── FILTER_PROJECTS ───────────────────────────────────────────────────────
+    if intent == "FILTER_PROJECTS":
+        sector      = parsed_query.get("sector")
+        ministry    = parsed_query.get("ministry")
+        agency      = parsed_query.get("agency")
+        risk_band   = parsed_query.get("risk_band")
+        min_score   = parsed_query.get("min_risk_score")
+        min_delay   = parsed_query.get("min_milestone_delay_months")
+        anomaly_flg = parsed_query.get("anomaly_flag")
+        proj_ids    = parsed_query.get("project_ids")
+        limit       = int(parsed_query.get("limit", 15))
+        sort_by     = parsed_query.get("sort_by", "composite_risk_score")
+
+        # Build audit query string
+        q_parts: list[str] = []
+        if sector:    q_parts.append(f"sector='{sector}'")
+        if ministry:  q_parts.append(f"ministry='{ministry}'")
+        if risk_band: q_parts.append(f"risk_band='{risk_band}'")
+        if min_score: q_parts.append(f"risk_score>={min_score}")
+        if min_delay: q_parts.append(f"milestone_delay>={min_delay}")
+        if anomaly_flg: q_parts.append("anomaly=True")
+        query_str = "query_store(" + ", ".join(q_parts) + f", limit={limit})"
+
+        rows = query_store(
+            sector=sector,
+            ministry=ministry,
+            agency=agency,
+            risk_band=risk_band,
+            min_risk_score=min_score,
+            min_milestone_delay_months=min_delay,
+            project_ids=proj_ids,
+            anomaly_flag=anomaly_flg,
+            sort_by=sort_by,
+            sort_asc=False,
+            limit=limit,
+            scope_ministry=scope_ministry,
+        )
+
+        if rows.empty:
+            return {
+                "type":      "filtered_list",
+                "data":      [],
+                "count":     0,
+                "message":   "No projects match the specified criteria.",
+                "query_run": query_str,
+            }
+
+        # Keep minimal columns for the answer composer
+        display_cols = [
+            "project_id", "sector", "ministry", "risk_band",
+            "composite_risk_score", "physical_progress_pct",
+            "milestone_delay_months", "cost_growth_pct", "as_of_date",
+        ]
+        data = rows[[c for c in display_cols if c in rows.columns]].to_dict(orient="records")
+        total_before_limit = len(query_store(
+            sector=sector, ministry=ministry, agency=agency, risk_band=risk_band,
+            min_risk_score=min_score, min_milestone_delay_months=min_delay,
+            project_ids=proj_ids, anomaly_flag=anomaly_flg,
+            scope_ministry=scope_ministry, limit=9999,
+        ))
+        return {
+            "type":      "filtered_list",
+            "data":      data,
+            "count":     total_before_limit,
+            "as_of_date": rows["as_of_date"].max() if "as_of_date" in rows.columns else "unknown",
+            "query_run": query_str,
+        }
+
+    # ── AGGREGATE ─────────────────────────────────────────────────────────────
+    if intent == "AGGREGATE":
+        metric   = parsed_query.get("metric", "cost_overrun")
+        group_by = parsed_query.get("group_by", "sector")
+
+        if group_by == "sector":
+            data = aggregate_by_sector(metric)
+        else:
+            data = []
+
+        return {
+            "type":      "aggregation",
+            "metric":    metric,
+            "group_by":  group_by,
+            "data":      data,
+            "query_run": f"aggregate_by_sector('{metric}')",
+        }
+
+    # ── Fallback ──────────────────────────────────────────────────────────────
+    return {
+        "type":  "error",
+        "error": "Could not execute query: unhandled intent.",
+        "query_run": str(parsed_query),
+    }

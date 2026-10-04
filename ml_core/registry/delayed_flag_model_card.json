@@ -1,0 +1,23 @@
+{
+  "model_name": "LogisticRegression",
+  "target": "delayed_flag",
+  "version": "v2.0.0",
+  "feature_set_version": "v2",
+  "intended_use": "Early-warning risk prediction for government project monitoring officers. Human officers must verify every prediction before taking action.",
+  "limitations": "Trained on synthetic data. Performance on real-world data may differ. Always verify predictions with domain experts.",
+  "known_weak_sectors": "Sectors with fewer than 30 training projects may have lower accuracy. Check per-sector metrics in the metrics JSON.",
+  "training_date_range": "2018-02-08 to 2024-03-19",
+  "test_date_range": "2019-01-22 to 2029-12-25",
+  "metrics_test": {
+    "pr_auc": 1.0,
+    "roc_auc": 1.0,
+    "brier_score": 3.854815804124737e-06,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "threshold": 0.4,
+    "n_samples": 400,
+    "n_positives": 185
+  },
+  "trained_on": "2026-10-04"
+}

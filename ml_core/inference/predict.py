@@ -1,104 +1,200 @@
-import pandas as pd
+"""
+PRAGYA AI — Inference Contract  (v2)
+======================================
+Single callable entry point consumed by the backend API and chatbot.
+
+Public API:
+    predict_project(project_id, as_of_date, df_history) -> dict
+    explain_risk(project_id, as_of_date, df_history)    -> dict   ← dashboard contract
+"""
+from __future__ import annotations
+
+import json
 import pickle
-import os
-from ml_core.features.pipeline import compute_features
-from ml_core.explain.shap_explainer import explain_prediction
+from datetime import date
+from pathlib import Path
+from typing import Optional
+
+import numpy as np
+import pandas as pd
+
 from ml_core.anomaly.detector import detect_anomalies
+from ml_core.explain.shap_explainer import explain_global, explain_prediction
+from ml_core.features.pipeline import (
+    FEATURE_SET_VERSION,
+    compute_features,
+)
 
-def load_model(target):
-    path = f"ml_core/registry/{target}_best_model.pkl"
-    if not os.path.exists(path):
+REGISTRY_DIR = Path("ml_core/registry")
+MODEL_VERSION_DEFAULT = "v2.0.0"
+
+
+# ── Model loading (cached in module scope) ────────────────────────────────────
+
+_model_cache: dict[str, dict] = {}
+
+
+def _load_model(target: str) -> Optional[dict]:
+    """Load a pickled model dict from the registry. Cached after first load."""
+    if target in _model_cache:
+        return _model_cache[target]
+    path = REGISTRY_DIR / f"{target}_best_model.pkl"
+    if not path.exists():
         return None
-    with open(path, "rb") as f:
-        return pickle.load(f)
+    with open(path, "rb") as fh:
+        payload = pickle.load(fh)
+    _model_cache[target] = payload
+    return payload
 
-def predict_project(project_id: str, as_of_date: str, df_history: pd.DataFrame):
+
+def _get_model_version(target: str) -> str:
+    payload = _load_model(target)
+    if payload:
+        return payload.get("model_version", MODEL_VERSION_DEFAULT)
+    return MODEL_VERSION_DEFAULT
+
+
+# ── Risk-band helper ──────────────────────────────────────────────────────────
+
+def _band(score: float) -> str:
+    if score > 0.70:
+        return "Critical"
+    if score > 0.40:
+        return "High"
+    if score > 0.20:
+        return "Medium"
+    return "Low"
+
+
+# ── Main inference function ───────────────────────────────────────────────────
+
+def predict_project(
+    project_id: str,
+    as_of_date: str,
+    df_history: pd.DataFrame,
+) -> dict:
     """
-    Contract for backend API.
-    Returns: {
-        'p_cost': float,
-        'p_time': float,
-        'p_impl': float, # Simulated for now if model missing
-        'composite_risk_score': float,
-        'risk_band': str,
-        'shap_explanation': list,
-        'anomaly_score': float,
-        'anomaly_reasons': str
-    }
+    Unified inference contract for the backend API.
+
+    Parameters
+    ----------
+    project_id : str
+        The project to score.
+    as_of_date : str
+        ISO-8601 date string. Features are computed using ONLY data ≤ this date.
+    df_history : DataFrame
+        Full multi-project update history (will be filtered to project_id here).
+
+    Returns
+    -------
+    dict with keys:
+        p_cost              float   cost-overrun probability
+        p_time              float   time-delay probability
+        p_impl              float   implementation-risk probability
+        composite_risk_score float  weighted combination
+        risk_band           str     Low / Medium / High / Critical
+        shap_explanation    list    top-5 SHAP dicts with 'text' field
+        shap_chart          str     path to per-project bar chart
+        anomaly_score       float
+        anomaly_reasons     str
+        model_version       str
+        feature_set_version str
+        as_of_date          str
     """
-    # 1. Compute features safely up to as_of_date
-    project_df = df_history[df_history['project_id'] == project_id]
+    project_df = df_history[
+        df_history["project_id"] == project_id
+    ].copy()
     if len(project_df) == 0:
-        raise ValueError("Project not found.")
-        
+        raise ValueError(f"Project '{project_id}' not found in the provided history.")
+
+    # 1. Compute features (leakage-safe)
     X = compute_features(project_df, as_of_date).reset_index(drop=True)
-    
-    # 2. Predict Targets
-    model_cost = load_model("overrun_flag")
-    model_time = load_model("delayed_flag")
-    
-    # Needs 2D array, Drop index columns
-    drop_cols = ['project_id', 'update_date']
-    X_model = X.drop(columns=[c for c in drop_cols if c in X.columns], errors='ignore')
-    
-    p_cost = model_cost.predict_proba(X_model)[0][1] if model_cost else 0.0
-    p_time = model_time.predict_proba(X_model)[0][1] if model_time else 0.0
-    p_impl = 0.0 # Placeholder for implementation_risk if not fully trained
-    
-    composite = (p_cost * 0.4) + (p_time * 0.4) + (p_impl * 0.2)
-    
-    if composite > 0.7:
-        band = "Critical"
-    elif composite > 0.4:
-        band = "High"
-    elif composite > 0.2:
-        band = "Medium"
+    drop_cols = [c for c in ["project_id", "update_date"] if c in X.columns]
+    X_model = X.drop(columns=drop_cols, errors="ignore")
+
+    # 2. Score all three targets
+    def _score(target: str) -> tuple[float, Optional[object]]:
+        payload = _load_model(target)
+        if payload is None:
+            return 0.0, None
+        mdl = payload["model"]
+        try:
+            prob = float(mdl.predict_proba(X_model)[0][1])
+        except Exception:
+            prob = 0.0
+        return prob, mdl
+
+    p_cost, model_cost = _score("overrun_flag")
+    p_time, model_time = _score("delayed_flag")
+    p_impl, model_impl = _score("implementation_risk_flag")
+
+    # 3. Composite risk score (weighted)
+    composite = p_cost * 0.40 + p_time * 0.40 + p_impl * 0.20
+
+    # 4. Primary SHAP explanation (use the highest-probability model)
+    shap_explanation: list[dict] = []
+    shap_chart: Optional[str] = None
+
+    primary_model  = None
+    primary_target = None
+    if max(p_cost, p_time, p_impl) > 0:
+        if p_cost >= p_time and p_cost >= p_impl:
+            primary_model, primary_target = model_cost, "overrun_flag"
+        elif p_time >= p_cost and p_time >= p_impl:
+            primary_model, primary_target = model_time, "delayed_flag"
+        else:
+            primary_model, primary_target = model_impl, "implementation_risk_flag"
+
+    if primary_model is not None:
+        shap_explanation, shap_chart = explain_prediction(
+            primary_model, X_model, primary_target or "risk", project_id=project_id
+        )
+
+    # 5. Anomaly detection (temporal guard applied inside detect_anomalies)
+    anomaly_df = detect_anomalies(project_df, as_of_date=as_of_date)
+    if len(anomaly_df) > 0:
+        latest_a = anomaly_df.iloc[-1]
+        anomaly_score   = float(latest_a.get("anomaly_score", 0.0))
+        anomaly_reasons = str(latest_a.get("anomaly_reason", ""))
     else:
-        band = "Low"
-        
-    # 3. Explain Primary Risk
-    shap_explanation = []
-    shap_chart = None
-    if model_cost and p_cost > p_time:
-        shap_explanation, shap_chart = explain_prediction(model_cost, X_model, "overrun_flag")
-    elif model_time:
-        shap_explanation, shap_chart = explain_prediction(model_time, X_model, "delayed_flag")
-        
-    # 4. Anomaly
-    anomalous_df = detect_anomalies(project_df)
-    
-    # Filter to anomalies happening right at as_of_date
-    recent_anomalies = anomalous_df[anomalous_df['update_date'] <= pd.to_datetime(as_of_date)]
-    if len(recent_anomalies) > 0:
-        latest_anomaly = recent_anomalies.iloc[-1]
-        anomaly_score = float(latest_anomaly['anomaly_score'])
-        anomaly_reasons = latest_anomaly['anomaly_reason']
-    else:
-        anomaly_score = 0.0
+        anomaly_score   = 0.0
         anomaly_reasons = ""
 
     return {
-        "p_cost": float(p_cost),
-        "p_time": float(p_time),
-        "p_impl": float(p_impl),
-        "composite_risk_score": float(composite),
-        "risk_band": band,
-        "shap_explanation": shap_explanation,
-        "shap_chart": shap_chart,
-        "anomaly_score": anomaly_score,
-        "anomaly_reasons": anomaly_reasons
+        "p_cost":               p_cost,
+        "p_time":               p_time,
+        "p_impl":               p_impl,
+        "composite_risk_score": composite,
+        "risk_band":            _band(composite),
+        "shap_explanation":     shap_explanation,
+        "shap_chart":           shap_chart,
+        "anomaly_score":        anomaly_score,
+        "anomaly_reasons":      anomaly_reasons,
+        "model_version":        _get_model_version(primary_target or "overrun_flag"),
+        "feature_set_version":  FEATURE_SET_VERSION,
+        "as_of_date":           as_of_date,
     }
 
-def explain_risk(project_id: str, as_of_date: str, df_history: pd.DataFrame):
+
+def explain_risk(
+    project_id: str,
+    as_of_date: str,
+    df_history: pd.DataFrame,
+) -> dict:
     """
-    Contract specifically requested by Dashboard.
+    Dashboard/chatbot contract.
+    Returns: risk_probability, risk_band, top_reasons (plain text),
+             shap_chart, model_version, feature_set_version.
     """
     res = predict_project(project_id, as_of_date, df_history)
     return {
-        "risk_probability": max(res["p_cost"], res["p_time"]),
-        "risk_band": res["risk_band"],
-        "top_reasons": [item["text"] for item in res["shap_explanation"]],
-        "shap_chart": res["shap_chart"],
-        "model_version": "v1.0.0",
-        "feature_set_version": "v1"
+        "risk_probability":    max(res["p_cost"], res["p_time"], res["p_impl"]),
+        "risk_band":           res["risk_band"],
+        "top_reasons":         [item["text"] for item in res["shap_explanation"]],
+        "shap_chart":          res["shap_chart"],
+        "model_version":       res["model_version"],
+        "feature_set_version": res["feature_set_version"],
+        "as_of_date":          res["as_of_date"],
+        "anomaly_score":       res["anomaly_score"],
+        "anomaly_reasons":     res["anomaly_reasons"],
     }
