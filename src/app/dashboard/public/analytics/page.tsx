@@ -79,7 +79,7 @@ export default function PublicAnalytics() {
                   outerRadius={100}
                   paddingAngle={2}
                   dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }: any) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                   labelLine={true}
                 >
                   {sectorData.map((entry, index) => (
@@ -87,7 +87,7 @@ export default function PublicAnalytics() {
                   ))}
                 </Pie>
                 <Tooltip 
-                  formatter={(value: number, name: string) => [`${value}%`, name]}
+                  formatter={(value: any, name: any) => [`${value}%`, name]}
                   contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 />
               </PieChart>
@@ -107,7 +107,7 @@ export default function PublicAnalytics() {
                   cy="50%"
                   outerRadius={110}
                   dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }: any) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                   labelLine={true}
                 >
                   {statusData.map((entry, index) => (
@@ -115,7 +115,7 @@ export default function PublicAnalytics() {
                   ))}
                 </Pie>
                 <Tooltip 
-                  formatter={(value: number, name: string) => [`${value}%`, name]}
+                  formatter={(value: any, name: any) => [`${value}%`, name]}
                   contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 />
                 <Legend verticalAlign="bottom" height={36} iconType="square" />
