@@ -15,7 +15,7 @@ export default function AdminProjects() {
   const [selectedProject, setSelectedProject] = useState<any | null>(null);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || \'http://localhost:8000\'}/api/projects`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/projects`)
       .then(res => res.json())
       .then(data => {
         setProjects(data);

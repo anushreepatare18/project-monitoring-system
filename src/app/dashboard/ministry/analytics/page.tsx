@@ -12,7 +12,7 @@ export default function MinistryAnalytics() {
   const MINISTRY_NAME = "Ministry_7";
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || \'http://localhost:8000\'}/api/projects`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/projects`)
       .then(res => res.json())
       .then(data => {
         const ministryProjects = data.filter((p: any) => p.ministry === MINISTRY_NAME);

@@ -10,7 +10,7 @@ export default function MinistryAlerts() {
   const MINISTRY_NAME = "Ministry_7";
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || \'http://localhost:8000\'}/api/projects`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/projects`)
       .then(res => res.json())
       .then(data => {
         // We simulate alerts for projects that are anomalous or have high/critical risk

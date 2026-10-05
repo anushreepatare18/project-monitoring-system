@@ -14,7 +14,7 @@ export default function AdminAlerts() {
   const Admin_NAME = "Agency_1";
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || \'http://localhost:8000\'}/api/projects`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/projects`)
       .then(res => res.json())
       .then(data => {
         
