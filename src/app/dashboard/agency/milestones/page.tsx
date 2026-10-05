@@ -10,7 +10,7 @@ export default function AgencyMilestones() {
   const AGENCY_NAME = "Agency_1";
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/projects")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || \'http://localhost:8000\'}/api/projects`)
       .then(res => res.json())
       .then(data => {
         const agencyProjects = data.filter((p: any) => p.implementing_agency === AGENCY_NAME);

@@ -9,7 +9,7 @@ export default function MinistryProjectDetails({ params }: { params: { id: strin
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`http://localhost:8000/api/projects/${params.id}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || \'http://localhost:8000\'}/api/projects/${params.id}`)
       .then(res => res.json())
       .then(data => {
         setProject(data);
